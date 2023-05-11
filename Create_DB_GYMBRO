@@ -1,0 +1,28 @@
+------CREAZIONE TABELLE-------
+
+------PERSONA------
+CREATE TABLE Persona (
+    numero_documento_persona CHAR(9),
+    nome_persona VARCHAR2(15) NOT NULL,
+    cognome_persona VARCHAR2(15) NOT NULL,
+    genere_persona CHAR(1) CHECK(genere_persona='M' OR genere_persona='F') NOT NULL,
+    codice_fiscale_persona CHAR(16),
+    data_di_nascita DATE NOT NULL,
+    eta_persona NUMBER(2,0),
+    via_persona VARCHAR2(30),
+    civico_persona VARCHAR2(5),
+    cap_persona NUMBER(5,0),
+    telefono_persona CHAR(10),
+    
+    CONSTRAINT pk_persona PRIMARY KEY(numero_documento_persona)
+);
+
+------UTENTE------
+CREATE TABLE Utente(
+    numero_documento_utente CHAR(9),
+    numero_tessera CHAR(8) UNIQUE,
+    
+    CONSTRAINT pk_utente PRIMARY KEY(numero_documento_utente),
+    CONSTRAINT fk_utente FOREIGN KEY(numero_documento_utente) REFERENCES Persona(numero_documento_persona)
+    ON DELETE CASCADE
+);
