@@ -1,20 +1,21 @@
 ------CREAZIONE TABELLE-------
 
 ------PERSONA------
-CREATE TABLE Persona (
+CREATE TABLE persona (
     numero_documento_persona CHAR(9),
-    nome_persona VARCHAR2(15) NOT NULL,
-    cognome_persona VARCHAR2(15) NOT NULL,
-    genere_persona CHAR(1) CHECK(genere_persona='M' OR genere_persona='F') NOT NULL,
-    codice_fiscale_persona CHAR(16),
-    data_di_nascita DATE NOT NULL,
-    eta_persona NUMBER(2,0),
-    via_persona VARCHAR2(30),
-    civico_persona VARCHAR2(5),
-    cap_persona NUMBER(5,0),
-    telefono_persona CHAR(10),
+    nome_persona             VARCHAR2(15) NOT NULL,
+    cognome_persona          VARCHAR2(15) NOT NULL,
+    genere_persona           CHAR(1) CHECK ( genere_persona = 'M'
+                                   OR genere_persona = 'F' ) NOT NULL,
+    codice_fiscale_persona   CHAR(16) UNIQUE,
+    data_di_nascita          DATE NOT NULL,
+    eta_persona              NUMBER(2, 0),
+    via_persona              VARCHAR2(30),
+    civico_persona           VARCHAR2(5),
+    cap_persona              NUMBER(5, 0),
+    telefono_persona         CHAR(10),
     
-    CONSTRAINT pk_persona PRIMARY KEY(numero_documento_persona)
+    CONSTRAINT pk_persona PRIMARY KEY ( numero_documento_persona )
 );
 
 ------UTENTE------
@@ -26,3 +27,32 @@ CREATE TABLE Utente(
     CONSTRAINT fk_utente FOREIGN KEY(numero_documento_utente) REFERENCES Persona(numero_documento_persona)
     ON DELETE CASCADE
 );
+
+------DIPENDENTE------
+CREATE TABLE dipendente (
+    numero_documento_dipendente CHAR(9),
+    codice_iban                 CHAR(9) NOT NULL,
+    mansione                    VARCHAR2(30) CHECK ( upper(mansione) = 'ISTRUTTORE'
+                                OR upper(mansione) = 'SEGRETARIA'
+                                OR upper(mansione) = 'RESPONSABILE' ) NOT NULL,
+    stipendio_mensile           NUMBER(5, 2) NOT NULL,
+    titolo_di_studio            VARCHAR2(40),
+    via_sede                    VARCHAR2(30) NOT NULL,
+    civico_sede                 VARCHAR2(5) NOT NULL,
+    cap_sede                    NUMBER(5, 0) NOT NULL,
+    data_di_licenziamento       DATE,
+    
+    CONSTRAINT pk_dipendente PRIMARY KEY ( numero_documento_dipendente ),
+    CONSTRAINT fk_dipendente FOREIGN KEY ( numero_documento_dipendente )
+        REFERENCES persona ( numero_documento_persona )
+        ON DELETE CASCADE,
+    CONSTRAINT fk_sede_dipendente FOREIGN KEY ( via_sede,
+                                                civico_sede,
+                                                cap_sede )
+        REFERENCES sede ( via_sede,
+                          civico_sede,
+                          cap_sede ) ON DELETE CASCADE
+)
+
+------SEDE------
+
