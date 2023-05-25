@@ -5,15 +5,15 @@ CREATE TABLE Persona (
     numero_documento_persona CHAR(9),
     nome_persona             VARCHAR2(15) NOT NULL,
     cognome_persona          VARCHAR2(15) NOT NULL,
-    genere_persona           CHAR(1) CHECK ( genere_persona = 'M'
-                                   OR genere_persona = 'F' ) NOT NULL,
+    genere_persona           CHAR(1) CHECK ( UPPER(genere_persona) = 'M'
+                                   OR UPPER(genere_persona) = 'F' ) NOT NULL,
     codice_fiscale_persona   CHAR(16) UNIQUE,
-    data_di_nascita          DATE NOT NULL,
+    data_di_nascita          DATE NOT NULL, 		
     eta_persona              NUMBER(2, 0),
     via_persona              VARCHAR2(30),
     civico_persona           VARCHAR2(5),
     cap_persona              NUMBER(5, 0),
-    telefono_persona         CHAR(10),
+    telefono_persona         CHAR(10) UNIQUE,
     
     CONSTRAINT pk_persona PRIMARY KEY ( numero_documento_persona )
 );
@@ -27,12 +27,13 @@ CREATE TABLE Sede (
     telefono_sede VARCHAR2(10) NOT NULL,
     
     CONSTRAINT pk_sede PRIMARY KEY ( via_sede, civico_sede, cap_sede )
-)
+);
 
 ------UTENTE------
 CREATE TABLE Utente (
     numero_documento_utente CHAR(9),
     numero_tessera          CHAR(8) UNIQUE,
+    
     CONSTRAINT pk_utente PRIMARY KEY ( numero_documento_utente ),
     CONSTRAINT fk_utente FOREIGN KEY ( numero_documento_utente )
         REFERENCES persona ( numero_documento_persona ) ON DELETE CASCADE
@@ -41,10 +42,10 @@ CREATE TABLE Utente (
 ------DIPENDENTE------
 CREATE TABLE Dipendente (
     numero_documento_dipendente CHAR(9),
-    codice_iban                 CHAR(9) NOT NULL,
-    mansione                    VARCHAR2(30) CHECK ( upper(mansione) = 'ISTRUTTORE'
-                                OR upper(mansione) = 'SEGRETARIA'
-                                OR upper(mansione) = 'RESPONSABILE' ) NOT NULL,
+    codice_iban                 CHAR(27) NOT NULL,
+    mansione                    VARCHAR2(30) CHECK ( UPPER(mansione) = 'ISTRUTTORE'
+                                OR UPPER(mansione) = 'SEGRETARIA'
+                                OR UPPER(mansione) = 'RESPONSABILE' ) NOT NULL,
     stipendio_mensile           NUMBER(5, 2) NOT NULL,
     titolo_di_studio            VARCHAR2(40),
     via_sede                    VARCHAR2(30) NOT NULL,
@@ -62,7 +63,7 @@ CREATE TABLE Dipendente (
         REFERENCES Sede ( via_sede,
                           civico_sede,
                           cap_sede ) ON DELETE CASCADE
-)
+);
 
 ------SCHEDA DI ALLENAMENTO------
 CREATE TABLE Scheda_di_allenamento (
@@ -79,7 +80,7 @@ CREATE TABLE Scheda_di_allenamento (
         REFERENCES dipendente ( numero_documento_dipendente ) ON DELETE CASCADE,
         
     CONSTRAINT chk_data_scheda check(data_inizio_scheda < data_fine_scheda)
-)
+);
 
 ------ESERCIZIO------
 CREATE TABLE Esercizio (
@@ -87,7 +88,7 @@ CREATE TABLE Esercizio (
     nome_gruppo_muscolare VARCHAR2(35),
     
     CONSTRAINT pk_esercizio PRIMARY KEY ( nome_esercizio )
-)
+);
 
 ------INCLUDE------
 CREATE TABLE Include (
@@ -109,8 +110,8 @@ CREATE TABLE Include (
                                            data_inizio_scheda ) 
         ON DELETE CASCADE,
     CONSTRAINT fk_include_esercizio FOREIGN KEY ( nome_esercizio )
-        REFERENCES esercizio ( nome_esercizio )
-)
+        REFERENCES esercizio ( nome_esercizio ) ON DELETE CASCADE
+);
 
 ------UTENZA------
 CREATE TABLE Utenza (
@@ -119,8 +120,8 @@ CREATE TABLE Utenza (
     civico_sede      VARCHAR2(5) NOT NULL,
     cap_sede         NUMBER(5, 0) NOT NULL,
     importo_utenza   NUMBER(6, 2) CHECK ( importo_utenza > 0 ) NOT NULL,
-    pagamento_utenza CHAR(1) CHECK ( upper(pagamento_utenza) = 'S'
-                                     OR upper(pagamento_utenza) = 'N' ) NOT NULL,
+    pagamento_utenza CHAR(1) CHECK ( UPPER(pagamento_utenza) = 'S'
+                                     OR UPPER(pagamento_utenza) = 'N' ) NOT NULL,
     data_scadenza    DATE NOT NULL,
     tipologia_utenza VARCHAR2(30) NOT NULL,
     
@@ -132,5 +133,5 @@ CREATE TABLE Utenza (
                           civico_sede,
                           cap_sede )
         ON DELETE CASCADE
-)
+);
 
