@@ -48,9 +48,9 @@ CREATE TABLE Dipendente (
                                 OR UPPER(mansione) = 'RESPONSABILE' ) NOT NULL,
     stipendio_mensile           NUMBER(5, 2) NOT NULL,
     titolo_di_studio            VARCHAR2(40),
-    via_sede                    VARCHAR2(30) NOT NULL,
-    civico_sede                 VARCHAR2(5) NOT NULL,
-    cap_sede                    NUMBER(5, 0) NOT NULL,
+    via_sede                    VARCHAR2(30),
+    civico_sede                 VARCHAR2(5),
+    cap_sede                    NUMBER(5, 0),
     data_di_licenziamento       DATE,
     
     CONSTRAINT pk_dipendente PRIMARY KEY ( numero_documento_dipendente ),
@@ -62,7 +62,7 @@ CREATE TABLE Dipendente (
                                                 cap_sede )
         REFERENCES Sede ( via_sede,
                           civico_sede,
-                          cap_sede ) ON DELETE CASCADE
+                          cap_sede ) ON DELETE SET NULL
 );
 
 ------SCHEDA DI ALLENAMENTO------
@@ -90,8 +90,8 @@ CREATE TABLE Esercizio (
     CONSTRAINT pk_esercizio PRIMARY KEY ( nome_esercizio )
 );
 
-------INCLUDE------
-CREATE TABLE Include (
+------Contiene------
+CREATE TABLE Contiene (
     numero_documento_utente CHAR(9),
     data_inizio_scheda      DATE,
     nome_esercizio          VARCHAR2(35),
@@ -135,3 +135,121 @@ CREATE TABLE Utenza (
         ON DELETE CASCADE
 );
 
+------TIPOLOGIA TURNO------
+CREATE TABLE Tipologia_turno (
+    nome_tipologia_turno   VARCHAR2(15),
+    giorno_settimana_turno CHAR(3) CHECK ( UPPER(giorno_settimana_turno) = 'LUN'
+                                           OR UPPER(giorno_settimana_turno) = 'MAR'
+                                           OR UPPER(giorno_settimana_turno) = 'MER'
+                                           OR UPPER(giorno_settimana_turno) = 'GIO'
+                                           OR UPPER(giorno_settimana_turno) = 'VEN'
+                                           OR UPPER(giorno_settimana_turno) = 'SAB' ) NOT NULL,
+    durata_turno           NUMBER(2, 1) CHECK ( durata_turno > 0 ) NOT NULL,
+    
+    CONSTRAINT pk_tipologia_turno PRIMARY KEY ( nome_tipologia_turno,
+                                                giorno_settimana_turno )
+);
+
+------ASEEGNAZIONE SETTIMANALE------
+CREATE TABLE Assegnazione_settimanale (
+    numero_documento_dipendente CHAR(9),
+    nome_tipologia_turno        VARCHAR2(15),
+    giorno_settimana_turno      CHAR(3),
+    data_assegnazione           DATE,
+    CONSTRAINT pk_assegnazione PRIMARY KEY ( numero_documento_dipendente,
+                                             nome_tipologia_turno,
+                                             giorno_settimana_turno,
+                                             data_assegnazione ),
+    CONSTRAINT fk_tipologia_assegnazione FOREIGN KEY ( nome_tipologia_turno,
+                                                       giorno_settimana_turno )
+        REFERENCES Tipologia_turno ( nome_tipologia_turno,
+                                     giorno_settimana_turno )
+            ON DELETE CASCADE,
+    CONSTRAINT fk_dipendente_assegnazione FOREIGN KEY ( numero_documento_dipendente )
+        REFERENCES Dipendente ( numero_documento_dipendente ) ON DELETE CASCADE
+);
+
+------PRESENZA DIPENDENTE------
+CREATE TABLE Presenza_dipendente (
+    numero_documento_dipendente CHAR(9),
+    data_presenza               DATE,
+    orario_entrata              DATE,
+    via_sede                    VARCHAR2(30),
+    civico_sede                 VARCHAR2(5),
+    cap_sede                    NUMBER(5, 0),
+    nome_tipologia_turno        VARCHAR2(15),
+    giorno_settimana_turno      CHAR(3),
+    orario_uscita               DATE,
+    
+    CONSTRAINT pk_presenza PRIMARY KEY ( numero_documento_dipendente,
+                                         data_presenza,
+                                         orario_entrata ),
+    CONSTRAINT fk_presenza_dipendente FOREIGN KEY ( numero_documento_dipendente )
+        REFERENCES Dipendente ( numero_documento_dipendente ),
+    CONSTRAINT fk_presenza_sede FOREIGN KEY ( via_sede,
+                                              civico_sede,
+                                              cap_sede )
+        REFERENCES Sede ( via_sede,
+                          civico_sede,
+                          cap_sede ),
+    CONSTRAINT fk_tipologia_presenza FOREIGN KEY ( nome_tipologia_turno,
+                                                   giorno_settimana_turno )
+        REFERENCES Tipologia_turno ( nome_tipologia_turno,
+                                     giorno_settimana_turno ) ON DELETE SET NULL
+);
+
+------PISCINA------
+CREATE TABLE Piscina (
+    via_sede       VARCHAR2(30),
+    civico_sede    VARCHAR2(5),
+    cap_sede       NUMBER(5, 0),
+    numero_piscina NUMBER(2, 0),
+    larghezza      NUMBER(3, 2) CHECK ( larghezza > 0 ) NOT NULL,
+    lunghezza      NUMBER(3, 2) CHECK ( lunghezza > 0 ) NOT NULL,
+    profondita     NUMBER(2, 2) CHECK ( profondita > 0 ) NOT NULL,
+    capienza       NUMBER(3, 0) CHECK ( capienza > 0 ) NOT NULL,
+    numero_corsie  NUMBER(2, 0) CHECK ( numero_corsie > 0 ) NOT NULL,
+    
+    CONSTRAINT pk_piscina PRIMARY KEY ( numero_piscina,
+                                        via_sede,
+                                        civico_sede,
+                                        cap_sede ),
+    CONSTRAINT fk_sede_piscina FOREIGN KEY ( via_sede,
+                                             civico_sede,
+                                             cap_sede )
+        REFERENCES Sede ( via_sede,
+                          civico_sede,
+                          cap_sede )
+);
+
+------PRENOTAZIONE------
+CREATE TABLE Prenotazione (
+    numero_documento_utente CHAR(9),
+    via_sede                VARCHAR2(30),
+    civico_sede             VARCHAR2(5),
+    cap_sede                NUMBER(5, 0),
+    numero_piscina          NUMBER(2, 0),
+    data_prenotazione       DATE,
+    orario_prenotazione     DATE,
+    numero_ore              NUMBER(1, 0) CHECK ( numero_ore BETWEEN 1 AND 6 ) NOT NULL,
+    prezzo_prenotazione     NUMBER(3, 2) NOT NULL,
+    prenotazione_pagata     CHAR(1) CHECK ( UPPER(prenotazione_pagata) = 'S'
+                                        OR UPPER(prenotazione_pagata) = 'N' ) NOT NULL,
+    CONSTRAINT pk_prenotazione PRIMARY KEY ( numero_documento_utente,
+                                             via_sede,
+                                             civico_sede,
+                                             cap_sede,
+                                             numero_piscina,
+                                             data_prenotazione,
+                                             orario_prenotazione ),
+    CONSTRAINT fk_piscina_prenotazione FOREIGN KEY ( via_sede,
+                                                     civico_sede,
+                                                     cap_sede,
+                                                     numero_piscina )
+        REFERENCES Piscina ( via_sede,
+                             civico_sede,
+                             cap_sede,
+                             numero_piscina ) ON DELETE CASCADE,
+    CONSTRAINT fk_utente_prenotazione FOREIGN KEY ( numero_documento_utente )
+        REFERENCES Utente ( numero_documento_utente )
+);
