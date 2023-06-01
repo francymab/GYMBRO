@@ -60,6 +60,13 @@ CREATE TABLE Prodotto (
     giacenza                NUMBER(4, 0) CHECK ( giacenza > 0 ) NOT NULL
 );
 
+-----CORSO-----
+CREATE TABLE Corso(   
+    -- ATTRIBUTI --  
+    nome_corso VARCHAR2(30) PRIMARY KEY,   
+    obiettivo  VARCHAR2(20)   
+);
+
 -----TIPOLOGIA ABBONAMENTO-----
 CREATE TABLE Tipologia_abbonamento (  
     -- ATTRIBUTI -- 
