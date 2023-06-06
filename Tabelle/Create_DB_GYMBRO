@@ -384,7 +384,7 @@ CREATE TABLE Vendita (
     -- ATTRIBUTI --  
     fk_scontrino     NUMBER(6, 0),
     fk_prodotto      CHAR(13),
-    quantita_venduta NUMBER(3, 0) CHECK ( quantita_venduta BETWEEN 1 AND 5 ) NOT NULL,  
+    quantita_venduta NUMBER(3, 0) CHECK ( quantita_venduta > 0) NOT NULL,  
   
     -- VINCOLI DI CHIAVE PRIMARIA --  
     CONSTRAINT pk_vendita PRIMARY KEY ( fk_scontrino,
