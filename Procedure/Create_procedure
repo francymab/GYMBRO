@@ -17,52 +17,52 @@ create or replace PROCEDURE creazione_abbonamento(nome_tipologia_abbonamento VAR
     BEGIN
         --si crea la tipologia abbonamento--
         INSERT INTO Tipologia_abbonamento VALUES (nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento);
-        
+
         --si controlla se il corso non esiste e nel caso lo si crea--
         INSERT INTO corso (nome_corso, obiettivo) 
             SELECT nome_corso1, obiettivo1 
             FROM dual 
             WHERE NOT EXISTS(SELECT * FROM corso WHERE nome_corso = nome_corso1);
-        
+
         --si assicia il corso alla tipologia abbonamento--
         INSERT INTO Compreso VALUES (nome_corso1, nome_tipologia_abbonamento, durata_abbonamento);
-        
+
         --si controlla se si vuole aggiunge un ulteriore corso all'abbonamento--
-        IF (nome_corso2 IS NULL) THEN
+        IF (nome_corso2 IS NOT NULL) THEN
             --si controlla se il corso non esiste e nel caso lo si crea--
             INSERT INTO corso (nome_corso, obiettivo) 
                 SELECT nome_corso2, obiettivo2 
                 FROM dual 
                 WHERE NOT EXISTS(SELECT * FROM corso WHERE nome_corso = nome_corso2);
-            
+
             --si assicia il corso alla tipologia abbonamento--
             INSERT INTO Compreso VALUES (nome_corso2, nome_tipologia_abbonamento, durata_abbonamento);
         END IF;
 
         --si controlla se si vuole aggiunge un ulteriore corso all'abbonamento--        
-        IF (nome_corso3 IS NULL) THEN
+        IF (nome_corso3 IS NOT NULL) THEN
             --si controlla se il corso non esiste e nel caso lo si crea--
             INSERT INTO corso (nome_corso, obiettivo) 
                 SELECT nome_corso3, obiettivo3 
                 FROM dual 
                 WHERE NOT EXISTS(SELECT * FROM corso WHERE nome_corso = nome_corso3);
-            
+
             --si assicia il corso alla tipologia abbonamento--
             INSERT INTO Compreso VALUES (nome_corso3, nome_tipologia_abbonamento, durata_abbonamento);
         END IF;
-        
+
         --si controlla se si vuole aggiunge un ulteriore corso all'abbonamento--
-        IF (nome_corso4 IS NULL) THEN
+        IF (nome_corso4 IS NOT NULL) THEN
             --si controlla se il corso non esiste e nel caso lo si crea--
             INSERT INTO corso (nome_corso, obiettivo) 
                 SELECT nome_corso4, obiettivo4 
                 FROM dual 
                 WHERE NOT EXISTS(SELECT * FROM corso WHERE nome_corso = nome_corso4);
-            
+
             --si assicia il corso alla tipologia abbonamento--
             INSERT INTO Compreso VALUES (nome_corso4, nome_tipologia_abbonamento, durata_abbonamento);
         END IF;
-        
+
     END;
     
 --COMPILA SCHEDA ALLENAMENTO--
