@@ -57,7 +57,7 @@ CREATE TABLE Prodotto (
     codice_a_barre          CHAR(13) PRIMARY KEY,
     nome_prodotto           VARCHAR2(50),
     prezzo_vendita_unitario NUMBER(7, 2) NOT NULL,
-    giacenza                NUMBER(4, 0) CHECK ( giacenza > 0 ) NOT NULL
+    giacenza                NUMBER(4, 0) CHECK ( giacenza >= 0 ) NOT NULL
 );
 
 -----CORSO-----
@@ -201,7 +201,7 @@ CREATE TABLE Scontrino(
     fk_sede_civico VARCHAR2(5) NOT NULL,  
     fk_sede_cap NUMBER(5,0) NOT NULL,  
     data_scontrino TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
-    prezzo_totale NUMBER(5,2) CHECK (prezzo_totale > 0),  
+    prezzo_totale NUMBER(7,2) CHECK (prezzo_totale > 0),  
       
     -- VINCOLI DI CHIAVE ESTERNA --   
     CONSTRAINT fk_sede_scontrino FOREIGN KEY(fk_sede_via, fk_sede_civico, fk_sede_cap)  
