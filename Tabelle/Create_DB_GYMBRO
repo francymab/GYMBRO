@@ -438,16 +438,16 @@ CREATE TABLE Prenotazione (
 CREATE TABLE Compreso(  
     -- ATTRIBUTI --    
     fk_corso VARCHAR2(30),  
-    fk_tipologia_abbonamento_nome VARCHAR2(100),  
-    fk_tipologia_abbonamento_durata NUMBER(2,0),  
+    fk_abbonamento_nome VARCHAR2(100),  
+    fk_abbonamento_durata NUMBER(2,0),  
     	  
     -- VINCOLI DI CHIAVE PRIMARIA --  
-    CONSTRAINT pk_compreso PRIMARY KEY(fk_corso, fk_tipologia_abbonamento_nome, fk_tipologia_abbonamento_durata),  
+    CONSTRAINT pk_compreso PRIMARY KEY(fk_corso, fk_abbonamento_nome, fk_abbonamento_durata),  
       
     -- VINCOLI DI CHIAVE ESTERNA --  
     CONSTRAINT fk_corso_compreso FOREIGN KEY(fk_corso)   
     	REFERENCES Corso(nome_corso) ON DELETE CASCADE,  
       
-    CONSTRAINT fk_tipologia_abbonamento_compreso FOREIGN KEY(fk_tipologia_abbonamento_nome, fk_tipologia_abbonamento_durata)  
+    CONSTRAINT fk_tipologia_abbonamento_compreso FOREIGN KEY(fk_abbonamento_nome, fk_abbonamento_durata)  
     	REFERENCES Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento) ON DELETE CASCADE  
 );
