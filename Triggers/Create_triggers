@@ -1,0 +1,39 @@
+-----CREATE TRIGGERS-----
+
+CREATE OR REPLACE TRIGGER check_date_scheda BEFORE
+    INSERT ON scheda_di_allenamento
+    FOR EACH ROW
+DECLARE
+    data_inizio_scheda_exc EXCEPTION;
+    data_fine_scheda_exc EXCEPTION;
+    data_inizio_maggiore_fine_exc EXCEPTION;
+    data_scadenza_minima scheda_di_allenamento.data_fine_scheda%TYPE := :new.data_inizio_scheda + 7;
+BEGIN
+    IF ( :new.data_inizio_scheda > :new.data_fine_scheda ) THEN
+        RAISE data_inizio_maggiore_fine_exc;
+    END IF;
+
+    IF ( :new.data_inizio_scheda < trunc(sysdate) ) THEN
+        RAISE data_inizio_scheda_exc;
+    END IF;
+
+    IF ( :new.data_fine_scheda < data_scadenza_minima ) THEN
+        RAISE data_fine_scheda_exc;
+    END IF;
+EXCEPTION
+    WHEN data_inizio_scheda_exc THEN
+        raise_application_error('-20002', '(SCHEDA_DI_ALLENAMENTO) ERRORE "data_inizio_scheda": '
+                                          || TO_DATE(:new.data_inizio_scheda, 'YYYY-MM-DD')
+                                          || ' < '
+                                          || TO_DATE(sysdate, 'YYYY-MM-DD'));
+    WHEN data_fine_scheda_exc THEN
+        raise_application_error('-20003', '(SCHEDA_DI_ALLENAMENTO) ERRORE "data_fine_scheda": '
+                                          || TO_DATE(:new.data_fine_scheda, 'YYYY-MM-DD')
+                                          || ' < '
+                                          || TO_DATE(data_scadenza_minima, 'YYYY-MM-DD'));
+    WHEN data_inizio_maggiore_fine_exc THEN
+        raise_application_error('-20004', '(SCHEDA_DI_ALLENAMENTO) ERRORE "data_inizio_scheda" MAGGIORE "data_fine_scheda": '
+                                          || TO_DATE(:new.data_inizio_scheda, 'YYYY-MM-DD')
+                                          || ' > '
+                                          || TO_DATE(:new.data_fine_scheda, 'YYYY-MM-DD'));
+END;
