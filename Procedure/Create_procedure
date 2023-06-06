@@ -24,7 +24,7 @@ create or replace PROCEDURE creazione_abbonamento(nome_tipologia_abbonamento VAR
             FROM dual 
             WHERE NOT EXISTS(SELECT * FROM corso WHERE nome_corso = nome_corso1);
 
-        --si assicia il corso alla tipologia abbonamento--
+        --si associa il corso alla tipologia abbonamento--
         INSERT INTO Compreso VALUES (nome_corso1, nome_tipologia_abbonamento, durata_abbonamento);
 
         --si controlla se si vuole aggiunge un ulteriore corso all'abbonamento--
@@ -35,7 +35,7 @@ create or replace PROCEDURE creazione_abbonamento(nome_tipologia_abbonamento VAR
                 FROM dual 
                 WHERE NOT EXISTS(SELECT * FROM corso WHERE nome_corso = nome_corso2);
 
-            --si assicia il corso alla tipologia abbonamento--
+            --si associa il corso alla tipologia abbonamento--
             INSERT INTO Compreso VALUES (nome_corso2, nome_tipologia_abbonamento, durata_abbonamento);
         END IF;
 
@@ -47,7 +47,7 @@ create or replace PROCEDURE creazione_abbonamento(nome_tipologia_abbonamento VAR
                 FROM dual 
                 WHERE NOT EXISTS(SELECT * FROM corso WHERE nome_corso = nome_corso3);
 
-            --si assicia il corso alla tipologia abbonamento--
+            --si associa il corso alla tipologia abbonamento--
             INSERT INTO Compreso VALUES (nome_corso3, nome_tipologia_abbonamento, durata_abbonamento);
         END IF;
 
@@ -59,7 +59,7 @@ create or replace PROCEDURE creazione_abbonamento(nome_tipologia_abbonamento VAR
                 FROM dual 
                 WHERE NOT EXISTS(SELECT * FROM corso WHERE nome_corso = nome_corso4);
 
-            --si assicia il corso alla tipologia abbonamento--
+            --si associa il corso alla tipologia abbonamento--
             INSERT INTO Compreso VALUES (nome_corso4, nome_tipologia_abbonamento, durata_abbonamento);
         END IF;
 
