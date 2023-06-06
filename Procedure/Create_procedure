@@ -1,6 +1,6 @@
 --CREATE PROCEDURE
 
---CREAZIONE ABBONAMENTO--
+--CREAZIONE TIPOLOGIA ABBONAMENTO--
 create or replace PROCEDURE creazione_abbonamento(nome_tipologia_abbonamento VARCHAR2,
                                                   durata_abbonamento NUMBER,
                                                   costo_abbonamento NUMBER,
