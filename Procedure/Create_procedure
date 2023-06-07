@@ -325,3 +325,90 @@ create or replace PROCEDURE vendita_prodotti(sede_via VARCHAR2,
             RAISE_APPLICATION_ERROR('-20101', 'LA GIACENZA È MINORE DELLA QUANTITA CHE SI VUOL VENDERE: ' || giacenzaX);
 
     END;
+
+--SOTTOSCRIZIONE UTENTE--
+CREATE OR REPLACE PROCEDURE sottoscrizione_utente (numero_persona   CHAR,
+                                                   nome_abbonamento VARCHAR2,
+                                                   via_sede         VARCHAR2,
+                                                   civico_sede      VARCHAR2,
+                                                   cap_sede         NUMBER,
+                                                   codice_fiscale   CHAR := NULL,
+                                                   data_di_nascita  VARCHAR2 := NULL,
+                                                   nome             VARCHAR2 := NULL,
+                                                   cognome          VARCHAR2 := NULL,
+                                                   genere           CHAR := NULL,
+                                                   via_persona      VARCHAR2 := NULL,
+                                                   civico_persona   VARCHAR2 := NULL,
+                                                   cap_persona      NUMBER := NULL,
+                                                   telefono_persona CHAR := NULL) 
+    AS
+    
+        sottoscrizione_exc EXCEPTION;
+        
+        data_di_nascitaX DATE := TO_DATE ( data_di_nascita, 'DD/MM/YYYY' );
+        eta_persona NUMBER := TO_NUMBER ( months_between(trunc(sysdate), data_di_nascitaX) / 12 );
+        
+        durata_abbonamentoX tipologia_abbonamento.durata_abbonamento%TYPE;
+        check_sot NUMBER := 0;
+    BEGIN
+        --controlliamo se il codice fiscale e la data di nascita sono null--
+        --nel caso si vuole inserire una nuova persona--
+        IF (codice_fiscale IS NOT NULL AND data_di_nascita IS NOT NULL) THEN
+            --inseriamo la persona--
+            INSERT INTO persona 
+                VALUES (
+                    UPPER(numero_persona),
+                    UPPER(nome),
+                    UPPER(cognome),
+                    UPPER(genere),
+                    UPPER(codice_fiscale),
+                    data_di_nascitaX,
+                    eta_persona,
+                    UPPER(via_persona),
+                    UPPER(civico_persona),
+                    cap_persona,
+                    UPPER(telefono_persona) );
+            --inseriamo l'utente associato alla persona appena creata--
+            INSERT INTO utente VALUES ( UPPER(numero_persona), numero_tessera_seq.NEXTVAL);
+        END IF;
+    
+        --tramite un contatore controlliamo se esiste già una sottoscrizione dell'utente allo specifico abbonamento--
+        SELECT COUNT(id_sottoscrizione)
+        INTO check_sot
+        FROM sottoscrizione
+        WHERE fk_utente = UPPER(numero_persona) AND fk_abbonamento_nome = UPPER(nome_abbonamento);
+    
+        --se esiste avremo il contatore maggiore di 0 e mandiamo l'errore--
+        IF ( check_sot > 0 ) THEN
+            RAISE sottoscrizione_exc;
+        ELSE
+            --altrimenti ricaviamo la durata dell'abbonamento per i dati della sottoscrizione--
+            SELECT durata_abbonamento INTO durata_abbonamentoX FROM tipologia_abbonamento 
+                WHERE nome_tipologia_abbonamento = UPPER(nome_abbonamento);
+    
+            --inseriamo la sottoscrizione--
+            INSERT INTO sottoscrizione (
+                id_sottoscrizione,
+                fk_utente,
+                fk_abbonamento_nome,
+                fk_abbonamento_durata,
+                fk_sede_via,
+                fk_sede_civico,
+                fk_sede_cap,
+                data_fine_sottoscrizione)
+            VALUES (
+                id_sottoscrizione_seq.NEXTVAL,
+                UPPER(numero_persona),
+                UPPER(nome_abbonamento),
+                durata_abbonamentoX,
+                UPPER(via_sede),
+                UPPER(civico_sede),
+                cap_sede,
+                add_months(sysdate, durata_abbonamentoX));
+    
+        END IF;
+    
+    EXCEPTION
+        WHEN sottoscrizione_exc THEN
+            raise_application_error('-20102', 'L''UTENTE è GIà SOTTOSCRITTO A:  ' || nome_abbonamento);
+    END;
