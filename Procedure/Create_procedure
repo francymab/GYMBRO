@@ -66,8 +66,8 @@ CREATE OR REPLACE PROCEDURE creazione_abbonamento(nome_tipologia_abbonamento VAR
     END;
     
 --COMPILA SCHEDA ALLENAMENTO--
-CREATE OR REPLACE PROCEDURE compila_scheda( data_inizio_scheda DATE,
-                                            data_fine_scheda DATE,
+CREATE OR REPLACE PROCEDURE compila_scheda( data_inizio_scheda VARCHAR2,
+                                            data_fine_scheda VARCHAR2,
                                             fk_scheda_utente CHAR,
                                             fk_dipendente CHAR,
                                             numero_serie NUMBER,
@@ -118,12 +118,14 @@ CREATE OR REPLACE PROCEDURE compila_scheda( data_inizio_scheda DATE,
     AS
         mansione_dip dipendente.mansione%type;
         abbonamento_sala_utente compreso%rowtype;
-        
+        data_inizio_schedaX DATE := TO_DATE ( data_inizio_scheda, 'DD/MM/YYYY' );
+        data_fine_schedaX DATE := TO_DATE ( data_fine_scheda, 'DD/MM/YYYY' );
+
+
         mansione_exc EXCEPTION;
-        abbonamento_nome_exc EXCEPTION;
 
     BEGIN
-    
+
         --controlliamo se l'utente ha pagato e se ha consegnato il certificato medico--
         SELECT * INTO abbonamento_sala_utente FROM Compreso 
         WHERE Compreso.fk_abbonamento_nome 
@@ -134,72 +136,72 @@ CREATE OR REPLACE PROCEDURE compila_scheda( data_inizio_scheda DATE,
             AND UPPER(certificato_medico) = 'S') 
         AND LOWER(fk_corso) = 'sala';
         
+
         SELECT mansione INTO mansione_dip FROM dipendente WHERE fk_persona = fk_dipendente AND data_di_licenziamento IS NULL;
-        
+
         --controlliamo se la mansione del dipendente è diversa da istruttore oppure null--
         IF(UPPER(mansione_dip) != 'ISTRUTTORE' OR mansione_dip IS NULL) THEN
             RAISE mansione_exc; --viene lanciata l'eccezione
         END IF;
-        
+        dbms_output.put_line('ciao');
         --creazione della scheda--
-        INSERT INTO Scheda_di_allenamento VALUES(data_inizio_scheda, fk_scheda_utente, fk_dipendente, data_fine_scheda);
-        
+        INSERT INTO Scheda_di_allenamento VALUES(data_inizio_schedaX, fk_scheda_utente, fk_dipendente, data_fine_schedaX);
+
         --inserimento del primo esercizio--
-        INSERT INTO Contiene VALUES(numero_serie, data_inizio_scheda, fk_scheda_utente, fk_esercizio, peso, numero_ripetizioni, secondi_di_recupero);
-        
+        INSERT INTO Contiene VALUES(numero_serie, data_inizio_schedaX, fk_scheda_utente, fk_esercizio, peso, numero_ripetizioni, secondi_di_recupero);
+
         --controlliamo se i valori obbligatori non sono null inserendo poi l'esercizio--
         IF ((numero_serie2 IS NOT NULL) AND (fk_esercizio2 IS NOT NULL) AND (secondi_di_recupero2 IS NOT NULL)) THEN
             INSERT INTO Contiene 
-            VALUES(numero_serie2, data_inizio_scheda, fk_scheda_utente, fk_esercizio2, peso2, numero_ripetizioni2, secondi_di_recupero2);
+            VALUES(numero_serie2, data_inizio_schedaX, fk_scheda_utente, fk_esercizio2, peso2, numero_ripetizioni2, secondi_di_recupero2);
         END IF;
-        
+
         --controlliamo se i valori obbligatori non sono null inserendo poi l'esercizio--
         IF ((numero_serie3 IS NOT NULL) AND (fk_esercizio3 IS NOT NULL) AND (secondi_di_recupero3 IS NOT NULL)) THEN
             INSERT INTO Contiene 
-            VALUES(numero_serie3, data_inizio_scheda, fk_scheda_utente, fk_esercizio3, peso3, numero_ripetizioni3, secondi_di_recupero3);
+            VALUES(numero_serie3, data_inizio_schedaX, fk_scheda_utente, fk_esercizio3, peso3, numero_ripetizioni3, secondi_di_recupero3);
         END IF;
-        
+
         --controlliamo se i valori obbligatori non sono null inserendo poi l'esercizio--
         IF ((numero_serie4 IS NOT NULL) AND (fk_esercizio4 IS NOT NULL) AND (secondi_di_recupero4 IS NOT NULL)) THEN
             INSERT INTO Contiene 
-            VALUES(numero_serie4, data_inizio_scheda, fk_scheda_utente, fk_esercizio4, peso4, numero_ripetizioni4, secondi_di_recupero4);
+            VALUES(numero_serie4, data_inizio_schedaX, fk_scheda_utente, fk_esercizio4, peso4, numero_ripetizioni4, secondi_di_recupero4);
         END IF;
-        
+
         --controlliamo se i valori obbligatori non sono null inserendo poi l'esercizio--
         IF ((numero_serie5 IS NOT NULL) AND (fk_esercizio5 IS NOT NULL) AND (secondi_di_recupero5 IS NOT NULL)) THEN
             INSERT INTO Contiene 
-            VALUES(numero_serie5, data_inizio_scheda, fk_scheda_utente, fk_esercizio5, peso5, numero_ripetizioni5, secondi_di_recupero5);
+            VALUES(numero_serie5, data_inizio_schedaX, fk_scheda_utente, fk_esercizio5, peso5, numero_ripetizioni5, secondi_di_recupero5);
         END IF;
-        
+
         --controlliamo se i valori obbligatori non sono null inserendo poi l'esercizio--
         IF ((numero_serie6 IS NOT NULL) AND (fk_esercizio6 IS NOT NULL) AND (secondi_di_recupero6 IS NOT NULL)) THEN
             INSERT INTO Contiene 
-            VALUES(numero_serie6, data_inizio_scheda, fk_scheda_utente, fk_esercizio6, peso6, numero_ripetizioni6, secondi_di_recupero6);
+            VALUES(numero_serie6, data_inizio_schedaX, fk_scheda_utente, fk_esercizio6, peso6, numero_ripetizioni6, secondi_di_recupero6);
         END IF;
-        
+
         --controlliamo se i valori obbligatori non sono null inserendo poi l'esercizio--
         IF ((numero_serie7 IS NOT NULL) AND (fk_esercizio7 IS NOT NULL) AND (secondi_di_recupero7 IS NOT NULL)) THEN
             INSERT INTO Contiene 
-            VALUES(numero_serie7, data_inizio_scheda, fk_scheda_utente, fk_esercizio7, peso7, numero_ripetizioni7, secondi_di_recupero7);
+            VALUES(numero_serie7, data_inizio_schedaX, fk_scheda_utente, fk_esercizio7, peso7, numero_ripetizioni7, secondi_di_recupero7);
         END IF;
-        
+
         --controlliamo se i valori obbligatori non sono null inserendo poi l'esercizio--
         IF ((numero_serie8 IS NOT NULL) AND (fk_esercizio8 IS NOT NULL) AND (secondi_di_recupero8 IS NOT NULL)) THEN
             INSERT INTO Contiene 
-            VALUES(numero_serie8, data_inizio_scheda, fk_scheda_utente, fk_esercizio8, peso8, numero_ripetizioni8, secondi_di_recupero8);
+            VALUES(numero_serie8, data_inizio_schedaX, fk_scheda_utente, fk_esercizio8, peso8, numero_ripetizioni8, secondi_di_recupero8);
         END IF;
-        
+
         --controlliamo se i valori obbligatori non sono null inserendo poi l'esercizio--
         IF ((numero_serie9 IS NOT NULL) AND (fk_esercizio9 IS NOT NULL) AND (secondi_di_recupero9 IS NOT NULL)) THEN
             INSERT INTO Contiene 
-            VALUES(numero_serie9, data_inizio_scheda, fk_scheda_utente, fk_esercizio9, peso9, numero_ripetizioni9, secondi_di_recupero9);
+            VALUES(numero_serie9, data_inizio_schedaX, fk_scheda_utente, fk_esercizio9, peso9, numero_ripetizioni9, secondi_di_recupero9);
         END IF;
-        
+
     EXCEPTION
         WHEN mansione_exc THEN 
             RAISE_APPLICATION_ERROR('-20100', 'LA MANSIONE DEL DIPENDENTE È DIVERSA DA ISTRUTTORE: ' || mansione_dip);
-        
-    END;
+    END
     
 --VENDITA PRODOTTI--
 CREATE OR REPLACE PROCEDURE vendita_prodotti(sede_via VARCHAR2,
@@ -457,11 +459,11 @@ CREATE OR REPLACE PROCEDURE assunzione(numero_persona    CHAR,
                                        civico_persona    VARCHAR2 := NULL,
                                        cap_persona       NUMBER := NULL,
                                        telefono          CHAR := NULL,
-                                       stipendioX        VARCHAR := NULL,
+                                       stipendioX        NUMBER := NULL,
                                        titolo_di_studioX VARCHAR :=NULL)
     AS
         sede_exc EXCEPTION;
-        
+
         chk_dipendente NUMBER;
         data_di_nascitaX DATE := TO_DATE ( data_di_nascita, 'DD/MM/YYYY' );
 
@@ -475,9 +477,9 @@ CREATE OR REPLACE PROCEDURE assunzione(numero_persona    CHAR,
         IF (stato_sedeX = 'NON ATTIVO') THEN
             RAISE sede_exc;
         END IF;
-        
+
         SELECT COUNT(fk_persona) INTO chk_dipendente FROM Dipendente WHERE fk_persona = numero_persona;
-        
+
         IF (chk_dipendente = 1) THEN
             UPDATE Dipendente SET fk_sede_via = via_sedeX, 
                                   fk_sede_civico = civico_sedeX, 
@@ -508,15 +510,31 @@ CREATE OR REPLACE PROCEDURE assunzione(numero_persona    CHAR,
                     civico_persona,
                     cap_persona,
                     telefono);
-        
-            INSERT INTO Dipendente(fk_persona, 
-                                   codice_iban, 
-                                   mansione, 
-                                   stipendio_mensile, 
-                                   titolo_di_studio, 
-                                   fk_sede_via, 
-                                   fk_sede_civico, 
-                                   fk_sede_cap)
+
+            IF(stipendioX IS NULL) THEN
+                INSERT INTO Dipendente(fk_persona, 
+                       codice_iban, 
+                       mansione,  
+                       titolo_di_studio, 
+                       fk_sede_via, 
+                       fk_sede_civico, 
+                       fk_sede_cap)
+                VALUES(numero_persona, 
+                       codice_ibanX, 
+                       mansioneX, 
+                       titolo_di_studioX, 
+                       via_sedeX, 
+                       civico_sedeX, 
+                       cap_sedeX);
+            ELSE
+                INSERT INTO Dipendente(fk_persona, 
+                       codice_iban, 
+                       mansione, 
+                       stipendio_mensile, 
+                       titolo_di_studio, 
+                       fk_sede_via, 
+                       fk_sede_civico, 
+                       fk_sede_cap)
                 VALUES(numero_persona, 
                        codice_ibanX, 
                        mansioneX, 
@@ -525,6 +543,8 @@ CREATE OR REPLACE PROCEDURE assunzione(numero_persona    CHAR,
                        via_sedeX, 
                        civico_sedeX, 
                        cap_sedeX);
+            END IF;
+
         END IF;
     END;
     
