@@ -201,7 +201,7 @@ CREATE OR REPLACE PROCEDURE compila_scheda( data_inizio_scheda VARCHAR2,
     EXCEPTION
         WHEN mansione_exc THEN 
             RAISE_APPLICATION_ERROR('-20100', 'LA MANSIONE DEL DIPENDENTE È DIVERSA DA ISTRUTTORE: ' || mansione_dip);
-    END
+    END;
     
 --VENDITA PRODOTTI--
 CREATE OR REPLACE PROCEDURE vendita_prodotti(sede_via VARCHAR2,
