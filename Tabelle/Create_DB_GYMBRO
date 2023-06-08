@@ -87,7 +87,7 @@ CREATE TABLE Dipendente (
     mansione              VARCHAR(30) NOT NULL,
     stipendio_mensile     NUMBER(6, 2) DEFAULT 1000.00 CHECK ( stipendio_mensile BETWEEN 800.00 AND 5000.00 ),
     titolo_di_studio      VARCHAR2(40),
-    data_di_licenziamento DATE,
+    data_di_licenziamento DATE DEFAULT NULL,
     fk_sede_via           VARCHAR2(30),
     fk_sede_civico        VARCHAR2(5),
     fk_sede_cap           NUMBER(5, 0),   

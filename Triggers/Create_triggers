@@ -37,3 +37,110 @@ EXCEPTION
                                           || ' > '
                                           || TO_DATE(:new.data_fine_scheda, 'YYYY-MM-DD'));
 END;
+
+--CALCOLO E CONTROLLO ETA--
+CREATE OR REPLACE TRIGGER genera_eta_persona
+BEFORE INSERT ON Persona
+FOR EACH ROW
+DECLARE
+    eta_massima NUMBER := 100;
+    eta_minima NUMBER := 6;
+    eta NUMBER;
+    
+    eta_exc EXCEPTION;
+BEGIN
+    eta := TO_NUMBER ( months_between(trunc(sysdate), :NEW.data_di_nascita) / 12 );
+    
+    IF (eta NOT BETWEEN eta_minima AND eta_massima) THEN
+        RAISE eta_exc;
+    END IF;
+    
+    :NEW.eta_persona := eta;
+    
+EXCEPTION
+    WHEN eta_exc THEN
+        RAISE_APPLICATION_ERROR('-20150', 'ETA NON CONSENTITA PER L''ISCRIZIONE ALLA PALESTRA');
+END;
+
+--CONTROLLO SUL DIPENDENTE--
+CREATE OR REPLACE TRIGGER genera_dipendente
+BEFORE INSERT ON Dipendente
+FOR EACH ROW
+DECLARE
+
+    eta_exc EXCEPTION;
+    tipo_dip_exc EXCEPTION;
+    tot_dip_exc EXCEPTION;
+
+    eta_dip NUMBER;
+    count_dip NUMBER :=0;
+BEGIN
+    SELECT eta_persona INTO eta_dip FROM Persona WHERE numero_documento_persona = :NEW.fk_persona;
+
+    IF (eta_dip < 18) THEN
+        RAISE eta_exc;
+    END IF;
+
+    SELECT COUNT(mansione) INTO count_dip FROM Dipendente 
+        WHERE mansione = :NEW.mansione AND fk_sede_via = :NEW.fk_sede_via 
+            AND fk_sede_civico = :NEW.fk_sede_civico AND fk_sede_cap = :NEW.fk_sede_cap;
+
+    IF(UPPER(:NEW.mansione) = 'ISTRUTTORE' AND count_dip = 3) THEN
+        DELETE FROM Persona WHERE numero_documento_persona = :NEW.fk_persona;
+        RAISE tipo_dip_exc;
+    ELSIF (UPPER(:NEW.mansione) = 'SEGRETARIA' AND count_dip = 2) THEN
+        DELETE FROM Persona WHERE numero_documento_persona = :NEW.fk_persona;
+        RAISE tipo_dip_exc;
+    ELSIF (UPPER(:NEW.mansione) = 'RESPONSABILE' AND count_dip = 1) THEN
+        DELETE FROM Persona WHERE numero_documento_persona = :NEW.fk_persona;
+        RAISE tipo_dip_exc;
+    END IF;
+
+    SELECT COUNT(fk_persona) INTO count_dip FROM Dipendente 
+        WHERE fk_sede_via = :NEW.fk_sede_via AND fk_sede_civico = :NEW.fk_sede_civico 
+            AND fk_sede_cap = :NEW.fk_sede_cap;
+
+    IF(count_dip = 5) THEN
+        DELETE FROM Persona WHERE numero_documento_persona = :NEW.fk_persona;
+        RAISE tot_dip_exc;
+    END IF;
+
+EXCEPTION
+    WHEN eta_exc THEN
+        RAISE_APPLICATION_ERROR('-20151', 'ETA DEL DIPENDENTE MINORE DI 18 ');
+    WHEN tipo_dip_exc THEN
+        RAISE_APPLICATION_ERROR('-20152', 'CI SONO GIÀ ' || count_dip ||' '|| :NEW.mansione|| ' NELLA SEDE SELEZIONATA');
+    WHEN tot_dip_exc THEN
+        RAISE_APPLICATION_ERROR('-20153', 'CI SONO GIÀ 5 NELLA SEDE SELEZIONATA');
+
+END;
+
+--SEDE NON ATTIVA--
+CREATE OR REPLACE TRIGGER sede_non_attiva  
+BEFORE UPDATE OF stato_sede ON Sede
+FOR EACH ROW
+DECLARE
+    
+    utenze_exc EXCEPTION;
+    
+    chk_utenze NUMBER := 0;
+    
+BEGIN 
+    SELECT COUNT(numero_fattura) INTO chk_utenze FROM Utenza  WHERE fk_sede_via = :NEW.via_sede
+            AND fk_sede_civico = :NEW.civico_sede AND fk_sede_cap = :NEW.cap_sede AND pagamento_utenza = 'N';
+            
+    IF (chk_utenze > 0) THEN
+        RAISE utenze_exc;
+    END IF;
+    
+    IF(UPPER(:NEW.stato_sede) = 'NON ATTIVO') THEN 
+        UPDATE Dipendente SET data_di_licenziamento = sysdate, stipendio_mensile = 0 WHERE fk_sede_via = :NEW.via_sede
+            AND fk_sede_civico = :NEW.civico_sede AND fk_sede_cap = :NEW.cap_sede; 
+    END IF; 
+    
+    EXCEPTION
+        WHEN utenze_exc THEN
+            RAISE_APPLICATION_ERROR('-20155', 'ESISTONO ANCORA DELLE UTENZE DA PAGARE');
+END;
+
+
