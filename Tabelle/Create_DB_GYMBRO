@@ -401,19 +401,17 @@ CREATE TABLE Vendita (
 -----PRENOTAZIONE-----
 CREATE TABLE Prenotazione (  
     -- ATTRIBUTI --  
-    data_prenotazione   DATE,
-    orario_prenotazione TIMESTAMP,
+    data_ora_prenotazione   TIMESTAMP,
     fk_utente           CHAR(9),
     fk_piscina_numero   NUMBER(1,0),
     fk_piscina_via      VARCHAR2(30),
     fk_piscina_civico   VARCHAR2(5),
     fk_piscina_cap      NUMBER(5, 0),
-    numero_ore          NUMBER(1, 0) CHECK ( numero_ore BETWEEN 1 AND 6 ) NOT NULL,
+    numero_ore          NUMBER(1, 0) CHECK ( numero_ore BETWEEN 1 AND 3 ) NOT NULL,
     prezzo_prenotazione NUMBER(5, 2) CHECK ( prezzo_prenotazione > 0 ) NOT NULL,    
   
     -- VINCOLI DI CHIAVE PRIMARIA --  
-    CONSTRAINT pk_prenotazione PRIMARY KEY ( data_prenotazione,
-                                             orario_prenotazione,
+    CONSTRAINT pk_prenotazione PRIMARY KEY ( data_ora_prenotazione,
                                              fk_utente,
                                              fk_piscina_numero,
                                              fk_piscina_via,
