@@ -122,22 +122,22 @@ FOR EACH ROW
 DECLARE
     
     utenze_exc EXCEPTION;
-    
+
     chk_utenze NUMBER := 0;
-    
+
 BEGIN 
     SELECT COUNT(numero_fattura) INTO chk_utenze FROM Utenza  WHERE fk_sede_via = :NEW.via_sede
             AND fk_sede_civico = :NEW.civico_sede AND fk_sede_cap = :NEW.cap_sede AND pagamento_utenza = 'N';
-            
+
     IF (chk_utenze > 0) THEN
         RAISE utenze_exc;
     END IF;
-    
+
     IF(UPPER(:NEW.stato_sede) = 'NON ATTIVO') THEN 
-        UPDATE Dipendente SET data_di_licenziamento = sysdate, stipendio_mensile = 0 WHERE fk_sede_via = :NEW.via_sede
+        UPDATE Dipendente SET data_di_licenziamento = sysdate WHERE fk_sede_via = :NEW.via_sede
             AND fk_sede_civico = :NEW.civico_sede AND fk_sede_cap = :NEW.cap_sede; 
     END IF; 
-    
+
     EXCEPTION
         WHEN utenze_exc THEN
             RAISE_APPLICATION_ERROR('-20155', 'ESISTONO ANCORA DELLE UTENZE DA PAGARE');
