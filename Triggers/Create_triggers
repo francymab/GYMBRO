@@ -1,41 +1,43 @@
 -----CREATE TRIGGERS-----
 
-CREATE OR REPLACE TRIGGER check_date_scheda BEFORE
-    INSERT ON scheda_di_allenamento
-    FOR EACH ROW
-DECLARE
-    data_inizio_scheda_exc EXCEPTION;
-    data_fine_scheda_exc EXCEPTION;
-    data_inizio_maggiore_fine_exc EXCEPTION;
-    data_scadenza_minima scheda_di_allenamento.data_fine_scheda%TYPE := :new.data_inizio_scheda + 7;
-BEGIN
-    IF ( :new.data_inizio_scheda > :new.data_fine_scheda ) THEN
-        RAISE data_inizio_maggiore_fine_exc;
-    END IF;
-
-    IF ( :new.data_inizio_scheda < trunc(sysdate) ) THEN
-        RAISE data_inizio_scheda_exc;
-    END IF;
-
-    IF ( :new.data_fine_scheda < data_scadenza_minima ) THEN
-        RAISE data_fine_scheda_exc;
-    END IF;
-EXCEPTION
-    WHEN data_inizio_scheda_exc THEN
-        raise_application_error('-20002', '(SCHEDA_DI_ALLENAMENTO) ERRORE "data_inizio_scheda": '
-                                          || TO_DATE(:new.data_inizio_scheda, 'YYYY-MM-DD')
-                                          || ' < '
-                                          || TO_DATE(sysdate, 'YYYY-MM-DD'));
-    WHEN data_fine_scheda_exc THEN
-        raise_application_error('-20003', '(SCHEDA_DI_ALLENAMENTO) ERRORE "data_fine_scheda": '
-                                          || TO_DATE(:new.data_fine_scheda, 'YYYY-MM-DD')
-                                          || ' < '
-                                          || TO_DATE(data_scadenza_minima, 'YYYY-MM-DD'));
-    WHEN data_inizio_maggiore_fine_exc THEN
-        raise_application_error('-20004', '(SCHEDA_DI_ALLENAMENTO) ERRORE "data_inizio_scheda" MAGGIORE "data_fine_scheda": '
-                                          || TO_DATE(:new.data_inizio_scheda, 'YYYY-MM-DD')
-                                          || ' > '
-                                          || TO_DATE(:new.data_fine_scheda, 'YYYY-MM-DD'));
+--CHECK DATA SCHEDA--
+CREATE OR REPLACE TRIGGER check_date_scheda     
+    BEFORE INSERT OR UPDATE OF data_fine_scheda ON scheda_di_allenamento     
+    FOR EACH ROW     
+DECLARE     
+    data_inizio_scheda_exc EXCEPTION;     
+    data_fine_scheda_exc EXCEPTION;     
+    data_inizio_maggiore_fine_exc EXCEPTION;     
+    data_scadenza_minima scheda_di_allenamento.data_fine_scheda%TYPE := :new.data_inizio_scheda + 7;     
+BEGIN  
+    IF ( :new.data_inizio_scheda > :new.data_fine_scheda ) THEN     
+        RAISE data_inizio_maggiore_fine_exc;     
+    END IF;     
+     
+    IF ( :new.data_inizio_scheda < trunc(sysdate) ) THEN     
+        RAISE data_inizio_scheda_exc;     
+    END IF;       
+   
+    IF ( :new.data_fine_scheda < data_scadenza_minima ) THEN     
+    	RAISE data_fine_scheda_exc;     
+    END IF;    
+   
+EXCEPTION     
+    WHEN data_inizio_scheda_exc THEN     
+        raise_application_error('-20002', '(SCHEDA_DI_ALLENAMENTO) ERRORE "data_inizio_scheda": '     
+                                          || TO_DATE(:new.data_inizio_scheda, 'DD/MM/YYYY')     
+                                          || ' < '     
+                                          || sysdate);     
+    WHEN data_fine_scheda_exc THEN     
+        raise_application_error('-20003', '(SCHEDA_DI_ALLENAMENTO) ERRORE "data_fine_scheda": '     
+                                          || TO_DATE(:new.data_fine_scheda, 'DD/MM/YYYY')     
+                                          || ' < '     
+                                          || TO_DATE(data_scadenza_minima, 'DD/MM/YYYY'));     
+    WHEN data_inizio_maggiore_fine_exc THEN     
+        raise_application_error('-20004', '(SCHEDA_DI_ALLENAMENTO) ERRORE "data_inizio_scheda" MAGGIORE "data_fine_scheda": '     
+                                          || TO_DATE(:new.data_inizio_scheda, 'DD/MM/YYYY')     
+                                          || ' > '     
+                                          || TO_DATE(:new.data_fine_scheda, 'DD/MM/YYYY'));     
 END;
 
 --CALCOLO E CONTROLLO ETA--
@@ -172,4 +174,41 @@ BEGIN
     :NEW.id_scontrino := id_scontrino_seq.NEXTVAL;
 END;
 
+--CHECK DATA UTENZA--
+CREATE OR REPLACE TRIGGER chk_data_utenza 
+BEFORE INSERT ON Utenza 
+FOR EACH ROW 
+DECLARE 
+    data_scadenza_exc EXCEPTION; 
 
+BEGIN 
+    IF(:NEW.data_scadenza <= SYSDATE) THEN 
+        RAISE data_scadenza_exc; 
+    END IF; 
+
+EXCEPTION 
+    WHEN data_scadenza_exc THEN 
+        RAISE_APPLICATION_ERROR('-20160', 'LA DATA SCADENZA ' || :NEW.data_scadenza || ' < ' || SYSDATE); 
+END;
+
+--MAX PRODOTTI VENDUTI--
+CREATE OR REPLACE TRIGGER max_prodotti_venduti     
+BEFORE INSERT ON VENDITA     
+FOR EACH ROW     
+DECLARE     
+
+    giacenza_exc EXCEPTION;
+
+    giacenzaX Prodotto.giacenza%type;
+    
+BEGIN  
+    SELECT giacenza INTO giacenzaX FROM Prodotto WHERE codice_a_barre = :NEW.fk_prodotto;
+    
+    IF (giacenzaX < :NEW.quantita_venduta) THEN
+        RAISE giacenza_exc;
+     END IF;
+   
+EXCEPTION     
+    WHEN giacenza_exc THEN 
+            RAISE_APPLICATION_ERROR('-20101', 'LA GIACENZA È MINORE DELLA QUANTITA CHE SI VUOL VENDERE: ' || giacenzaX);
+END;

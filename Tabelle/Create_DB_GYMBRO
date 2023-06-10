@@ -57,7 +57,7 @@ CREATE TABLE Prodotto (
     codice_a_barre          CHAR(13) PRIMARY KEY,
     nome_prodotto           VARCHAR2(50),
     prezzo_vendita_unitario NUMBER(7, 2) NOT NULL,
-    giacenza                NUMBER(4, 0) CHECK ( giacenza >= 0 ) NOT NULL
+    giacenza                NUMBER(4, 0) NOT NULL
 );
 
 -----CORSO-----
