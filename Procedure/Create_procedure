@@ -218,10 +218,8 @@ create or replace PROCEDURE vendita_prodotti(sede_via VARCHAR2,
                                              codice_a_barre5 CHAR := NULL,
                                              quantita_venduta5 NUMBER := NULL)
     AS
-        giacenza_exc EXCEPTION;
         sede_exc EXCEPTION;
 
-        giacenzaX Prodotto.giacenza%type;
         prezzo_vendita_un Prodotto.prezzo_vendita_unitario%type;
         prezzo_totX Scontrino.prezzo_totale%type := 0;
         stato_sedeX Sede.stato_sede%type;
@@ -237,26 +235,17 @@ create or replace PROCEDURE vendita_prodotti(sede_via VARCHAR2,
         END IF;
 
         --ricaviamo la giacenza del prodotto da vendere--
-        SELECT giacenza, prezzo_vendita_unitario INTO giacenzaX, prezzo_vendita_un 
+        SELECT prezzo_vendita_unitario INTO prezzo_vendita_un 
             FROM Prodotto where codice_a_barre = codice_a_barre1;
 
         --calcolo del totale dello scontrino--
         prezzo_totX := prezzo_totX + (prezzo_vendita_un * quantita_venduta1);
 
-        --controlliamo se la giacenza del prodotto da vendere è minore della quantita che si vuole vendere--
-        IF (giacenzaX < quantita_venduta1) THEN
-            RAISE giacenza_exc;
-        END IF;
 
         IF (codice_a_barre2 IS NOT NULL AND quantita_venduta2 IS NOT NULL) THEN
             --ricaviamo la giacenza del prodotto da vendere--
-            SELECT giacenza, prezzo_vendita_unitario INTO giacenzaX, prezzo_vendita_un 
+            SELECT prezzo_vendita_unitario INTO prezzo_vendita_un 
                 FROM Prodotto where codice_a_barre = codice_a_barre2;
-
-            --controlliamo se la giacenza del prodotto da vendere è minore della quantita che si vuole vendere--
-            IF (giacenzaX < quantita_venduta2) THEN
-                RAISE giacenza_exc;
-            END IF;
 
             --calcolo del totale dello scontrino--
             prezzo_totX := prezzo_totX + (prezzo_vendita_un * quantita_venduta2);
@@ -264,13 +253,8 @@ create or replace PROCEDURE vendita_prodotti(sede_via VARCHAR2,
 
         IF (codice_a_barre3 IS NOT NULL AND quantita_venduta3 IS NOT NULL) THEN
             --ricaviamo la giacenza del prodotto da vendere--
-            SELECT giacenza, prezzo_vendita_unitario INTO giacenzaX, prezzo_vendita_un 
+            SELECT prezzo_vendita_unitario INTO prezzo_vendita_un 
                 FROM Prodotto where codice_a_barre = codice_a_barre3;
-
-            --controlliamo se la giacenza del prodotto da vendere è minore della quantita che si vuole vendere--
-            IF (giacenzaX < quantita_venduta3) THEN
-                RAISE giacenza_exc;
-            END IF;
 
             --calcolo del totale dello scontrino--
             prezzo_totX := prezzo_totX + (prezzo_vendita_un * quantita_venduta3);
@@ -278,13 +262,8 @@ create or replace PROCEDURE vendita_prodotti(sede_via VARCHAR2,
 
         IF (codice_a_barre4 IS NOT NULL AND quantita_venduta4 IS NOT NULL) THEN
             --ricaviamo la giacenza del prodotto da vendere--
-            SELECT giacenza, prezzo_vendita_unitario INTO giacenzaX, prezzo_vendita_un 
+            SELECT prezzo_vendita_unitario INTO prezzo_vendita_un 
                 FROM Prodotto where codice_a_barre = codice_a_barre4;
-
-            --controlliamo se la giacenza del prodotto da vendere è minore della quantita che si vuole vendere--
-            IF (giacenzaX < quantita_venduta4) THEN
-                RAISE giacenza_exc;
-            END IF;
 
             --calcolo del totale dello scontrino--
             prezzo_totX := prezzo_totX + (prezzo_vendita_un * quantita_venduta4);
@@ -292,13 +271,8 @@ create or replace PROCEDURE vendita_prodotti(sede_via VARCHAR2,
 
         IF (codice_a_barre5 IS NOT NULL AND quantita_venduta5 IS NOT NULL) THEN
             --ricaviamo la giacenza del prodotto da vendere--
-            SELECT giacenza, prezzo_vendita_unitario INTO giacenzaX, prezzo_vendita_un 
+            SELECT prezzo_vendita_unitario INTO prezzo_vendita_un 
                 FROM Prodotto where codice_a_barre = codice_a_barre5;
-
-            --controlliamo se la giacenza del prodotto da vendere è minore della quantita che si vuole vendere--
-            IF (giacenzaX < quantita_venduta5) THEN
-                RAISE giacenza_exc;
-            END IF;
 
             --calcolo del totale dello scontrino--
             prezzo_totX := prezzo_totX + (prezzo_vendita_un * quantita_venduta5);
@@ -309,35 +283,33 @@ create or replace PROCEDURE vendita_prodotti(sede_via VARCHAR2,
             VALUES (sede_via, sede_civico, sede_cap, prezzo_totX);
 
         --aggiorniamo la giacenza di tutti i prodotti ed inseriamo la vendita--
-        UPDATE Prodotto SET giacenza = (giacenza - quantita_venduta1) WHERE codice_a_barre = codice_a_barre1;
         INSERT INTO Vendita VALUES(id_scontrino_seq.currval, codice_a_barre1, quantita_venduta1);
+        UPDATE Prodotto SET giacenza = (giacenza - quantita_venduta1) WHERE codice_a_barre = codice_a_barre1;
+
 
         IF (codice_a_barre2 IS NOT NULL) THEN
-            UPDATE Prodotto SET giacenza = (giacenza - quantita_venduta2) WHERE codice_a_barre = codice_a_barre2;
             INSERT INTO Vendita VALUES(id_scontrino_seq.currval, codice_a_barre2, quantita_venduta2);
+            UPDATE Prodotto SET giacenza = (giacenza - quantita_venduta2) WHERE codice_a_barre = codice_a_barre2;
         END IF;
 
         IF (codice_a_barre3 IS NOT NULL) THEN
-            UPDATE Prodotto SET giacenza = (giacenza - quantita_venduta3) WHERE codice_a_barre = codice_a_barre3;
             INSERT INTO Vendita VALUES(id_scontrino_seq.currval, codice_a_barre3, quantita_venduta3);
+            UPDATE Prodotto SET giacenza = (giacenza - quantita_venduta3) WHERE codice_a_barre = codice_a_barre3;
         END IF;
 
         IF (codice_a_barre4 IS NOT NULL) THEN
-            UPDATE Prodotto SET giacenza = (giacenza - quantita_venduta4) WHERE codice_a_barre = codice_a_barre4;
             INSERT INTO Vendita VALUES(id_scontrino_seq.currval, codice_a_barre4, quantita_venduta4);
+            UPDATE Prodotto SET giacenza = (giacenza - quantita_venduta4) WHERE codice_a_barre = codice_a_barre4;
         END IF;
 
         IF (codice_a_barre5 IS NOT NULL) THEN
-            UPDATE Prodotto SET giacenza = (giacenza - quantita_venduta5) WHERE codice_a_barre = codice_a_barre5;
             INSERT INTO Vendita VALUES(id_scontrino_seq.currval, codice_a_barre5, quantita_venduta5);
+            UPDATE Prodotto SET giacenza = (giacenza - quantita_venduta5) WHERE codice_a_barre = codice_a_barre5;
         END IF;
 
     EXCEPTION
-        WHEN giacenza_exc THEN 
-            RAISE_APPLICATION_ERROR('-20101', 'LA GIACENZA È MINORE DELLA QUANTITA CHE SI VUOL VENDERE: ' || giacenzaX);
-
         WHEN sede_exc THEN
-            raise_application_error('-20106', 'LA SEDE ' || sede_via || ', '|| sede_civico || ', '|| sede_cap || ' NON È ATTIVA');
+            RAISE_APPLICATION_ERROR('-20106', 'LA SEDE ' || sede_via || ', '|| sede_civico || ', '|| sede_cap || ' NON È ATTIVA');
 
     END;
 

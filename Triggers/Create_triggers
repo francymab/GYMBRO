@@ -192,7 +192,7 @@ EXCEPTION
 END;
 
 --MAX PRODOTTI VENDUTI--
-CREATE OR REPLACE TRIGGER max_prodotti_venduti     
+create or replace TRIGGER max_prodotti_venduti     
 BEFORE INSERT ON VENDITA     
 FOR EACH ROW     
 DECLARE     
@@ -210,5 +210,5 @@ BEGIN
    
 EXCEPTION     
     WHEN giacenza_exc THEN 
-            RAISE_APPLICATION_ERROR('-20101', 'LA GIACENZA È MINORE DELLA QUANTITA CHE SI VUOL VENDERE: ' || giacenzaX);
+            RAISE_APPLICATION_ERROR('-20101', 'LA GIACENZA DEL PRODOTTO ' || :NEW.fk_prodotto || ' È MINORE DELLA QUANTITA CHE SI VUOL VENDERE, GIACENZA: ' || giacenzaX);
 END;
