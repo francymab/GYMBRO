@@ -63,7 +63,7 @@ EXCEPTION
 END;
 
 --CONTROLLO SUL DIPENDENTE--
-CREATE OR REPLACE TRIGGER genera_dipendente
+create or replace trigger genera_dipendente
 BEFORE INSERT ON Dipendente
 FOR EACH ROW
 DECLARE
@@ -86,13 +86,10 @@ BEGIN
             AND fk_sede_civico = :NEW.fk_sede_civico AND fk_sede_cap = :NEW.fk_sede_cap;
 
     IF(UPPER(:NEW.mansione) = 'ISTRUTTORE' AND count_dip = 3) THEN
-        DELETE FROM Persona WHERE numero_documento_persona = :NEW.fk_persona;
         RAISE tipo_dip_exc;
     ELSIF (UPPER(:NEW.mansione) = 'SEGRETARIA' AND count_dip = 2) THEN
-        DELETE FROM Persona WHERE numero_documento_persona = :NEW.fk_persona;
         RAISE tipo_dip_exc;
     ELSIF (UPPER(:NEW.mansione) = 'RESPONSABILE' AND count_dip = 1) THEN
-        DELETE FROM Persona WHERE numero_documento_persona = :NEW.fk_persona;
         RAISE tipo_dip_exc;
     END IF;
 
@@ -100,7 +97,7 @@ BEGIN
         WHERE fk_sede_via = :NEW.fk_sede_via AND fk_sede_civico = :NEW.fk_sede_civico 
             AND fk_sede_cap = :NEW.fk_sede_cap;
 
-    IF(count_dip = 5) THEN
+    IF(count_dip = 6) THEN
         DELETE FROM Persona WHERE numero_documento_persona = :NEW.fk_persona;
         RAISE tot_dip_exc;
     END IF;
@@ -111,7 +108,7 @@ EXCEPTION
     WHEN tipo_dip_exc THEN
         RAISE_APPLICATION_ERROR('-20152', 'CI SONO GIÀ ' || count_dip ||' '|| :NEW.mansione|| ' NELLA SEDE SELEZIONATA');
     WHEN tot_dip_exc THEN
-        RAISE_APPLICATION_ERROR('-20153', 'CI SONO GIÀ 5 NELLA SEDE SELEZIONATA');
+        RAISE_APPLICATION_ERROR('-20153', 'CI SONO GIÀ 6 NELLA SEDE SELEZIONATA');
 
 END;
 
@@ -142,5 +139,15 @@ BEGIN
         WHEN utenze_exc THEN
             RAISE_APPLICATION_ERROR('-20155', 'ESISTONO ANCORA DELLE UTENZE DA PAGARE');
 END;
+
+--NUMERO TESSERA UTENTE--
+CREATE OR REPLACE TRIGGER numero_tessera_utente BEFORE
+INSERT ON utente
+FOR EACH ROW
+BEGIN
+    :NEW.numero_tessera := numero_tessera_seq.NEXTVAL;
+END;
+
+
 
 
