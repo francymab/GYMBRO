@@ -204,7 +204,7 @@ CREATE OR REPLACE PROCEDURE compila_scheda( data_inizio_scheda VARCHAR2,
     END;
     
 --VENDITA PRODOTTI--
-CREATE OR REPLACE PROCEDURE vendita_prodotti(sede_via VARCHAR2,
+create or replace PROCEDURE vendita_prodotti(sede_via VARCHAR2,
                                              sede_civico VARCHAR2,
                                              sede_cap VARCHAR2,
                                              codice_a_barre1 CHAR,
@@ -227,11 +227,11 @@ CREATE OR REPLACE PROCEDURE vendita_prodotti(sede_via VARCHAR2,
         stato_sedeX Sede.stato_sede%type;
 
     BEGIN
-        
+
         --controlliamo se la sede è attiva o meno--
         SELECT stato_sede INTO stato_sedeX FROM Sede 
             WHERE via_sede = sede_via AND civico_sede = sede_civico AND cap_sede = sede_cap;
-            
+
         IF (stato_sedeX = 'NON ATTIVO') THEN
             RAISE sede_exc;
         END IF;
@@ -305,8 +305,8 @@ CREATE OR REPLACE PROCEDURE vendita_prodotti(sede_via VARCHAR2,
         END IF;
 
         --creazione scontrino--
-        INSERT INTO Scontrino (id_scontrino, fk_sede_via, fk_sede_civico, fk_sede_cap, prezzo_totale)
-            VALUES (id_scontrino_seq.nextval, sede_via, sede_civico, sede_cap, prezzo_totX);
+        INSERT INTO Scontrino (fk_sede_via, fk_sede_civico, fk_sede_cap, prezzo_totale)
+            VALUES (sede_via, sede_civico, sede_cap, prezzo_totX);
 
         --aggiorniamo la giacenza di tutti i prodotti ed inseriamo la vendita--
         UPDATE Prodotto SET giacenza = (giacenza - quantita_venduta1) WHERE codice_a_barre = codice_a_barre1;
@@ -335,14 +335,14 @@ CREATE OR REPLACE PROCEDURE vendita_prodotti(sede_via VARCHAR2,
     EXCEPTION
         WHEN giacenza_exc THEN 
             RAISE_APPLICATION_ERROR('-20101', 'LA GIACENZA È MINORE DELLA QUANTITA CHE SI VUOL VENDERE: ' || giacenzaX);
-        
+
         WHEN sede_exc THEN
             raise_application_error('-20106', 'LA SEDE ' || sede_via || ', '|| sede_civico || ', '|| sede_cap || ' NON È ATTIVA');
 
     END;
 
 --SOTTOSCRIZIONE UTENTE--
-CREATE OR REPLACE PROCEDURE sottoscrizione_utente (numero_persona   CHAR,  
+create or replace PROCEDURE sottoscrizione_utente (numero_persona   CHAR,  
                                                    nome_abbonamento VARCHAR2,  
                                                    via_sedeX         VARCHAR2,  
                                                    civico_sedeX      VARCHAR2,  
@@ -360,24 +360,24 @@ CREATE OR REPLACE PROCEDURE sottoscrizione_utente (numero_persona   CHAR,
       
         sottoscrizione_exc EXCEPTION;  
         sede_exc EXCEPTION;  
-  
+
         data_di_nascitaX DATE := TO_DATE ( data_di_nascita, 'DD/MM/YYYY' );  
         eta_persona NUMBER := TO_NUMBER ( months_between(trunc(sysdate), data_di_nascitaX) / 12 );  
-  
+
         durata_abbonamentoX tipologia_abbonamento.durata_abbonamento%TYPE;  
         check_sot NUMBER := 0;  
         stato_sedeX Sede.stato_sede%type;  
     BEGIN  
-      
+
         --controlliamo se la sede è attiva o meno--  
         SELECT stato_sede INTO stato_sedeX FROM Sede   
             WHERE via_sede = via_sedeX AND civico_sede = civico_sedeX AND cap_sede = cap_sedeX;  
-              
+
         IF (stato_sedeX = 'NON ATTIVO') THEN  
             RAISE sede_exc;  
         END IF;  
-          
-          
+
+
         --controlliamo se il codice fiscale e la data di nascita sono null--  
         --nel caso si vuole inserire una nuova persona--  
         IF (codice_fiscale IS NOT NULL AND data_di_nascita IS NOT NULL) THEN  
@@ -398,13 +398,13 @@ CREATE OR REPLACE PROCEDURE sottoscrizione_utente (numero_persona   CHAR,
             --inseriamo l'utente associato alla persona appena creata--  
             INSERT INTO Utente(fk_persona) VALUES ( numero_persona );  
         END IF;  
-  
+
         --tramite un contatore controlliamo se esiste già una sottoscrizione dell'utente allo specifico abbonamento--  
         SELECT COUNT(id_sottoscrizione)  
         INTO check_sot  
         FROM sottoscrizione  
         WHERE fk_utente = numero_persona AND fk_abbonamento_nome = nome_abbonamento;  
-  
+
         --se esiste avremo il contatore maggiore di 0 e mandiamo l'errore--  
         IF ( check_sot > 0 ) THEN  
             RAISE sottoscrizione_exc;  
@@ -412,10 +412,9 @@ CREATE OR REPLACE PROCEDURE sottoscrizione_utente (numero_persona   CHAR,
             --altrimenti ricaviamo la durata dell'abbonamento per i dati della sottoscrizione--  
             SELECT durata_abbonamento INTO durata_abbonamentoX FROM tipologia_abbonamento   
                 WHERE nome_tipologia_abbonamento = nome_abbonamento;  
-  
+
             --inseriamo la sottoscrizione--  
-            INSERT INTO sottoscrizione (  
-                id_sottoscrizione,  
+            INSERT INTO sottoscrizione (
                 fk_utente,  
                 fk_abbonamento_nome,  
                 fk_abbonamento_durata,  
@@ -423,8 +422,7 @@ CREATE OR REPLACE PROCEDURE sottoscrizione_utente (numero_persona   CHAR,
                 fk_sede_civico,  
                 fk_sede_cap,  
                 data_fine_sottoscrizione)  
-            VALUES (  
-                id_sottoscrizione_seq.NEXTVAL,  
+            VALUES (   
                 numero_persona,  
                 nome_abbonamento,  
                 durata_abbonamentoX,  
@@ -432,17 +430,17 @@ CREATE OR REPLACE PROCEDURE sottoscrizione_utente (numero_persona   CHAR,
                 civico_sedeX,  
                 cap_sedeX,  
                 add_months(sysdate, durata_abbonamentoX));  
-  
+
         END IF;  
-  
+
     EXCEPTION  
         WHEN sottoscrizione_exc THEN  
             raise_application_error('-20102', 'L''UTENTE È GIÀ SOTTOSCRITTO A:  ' || nome_abbonamento);  
-          
+
         WHEN sede_exc THEN  
             raise_application_error('-20105', 'LA SEDE ' || via_sedeX || ', '|| civico_sedeX || ', '|| cap_sedeX || ' NON È ATTIVA');  
     END;
-    
+
 --LICENZIAMENTO--
 CREATE OR REPLACE PROCEDURE Licenziamento_dipendente(numero_documento CHAR) AS  
 BEGIN  

@@ -141,13 +141,35 @@ BEGIN
 END;
 
 --NUMERO TESSERA UTENTE--
-CREATE OR REPLACE TRIGGER numero_tessera_utente BEFORE
+CREATE OR REPLACE TRIGGER numero_tessera_trigger BEFORE
 INSERT ON utente
 FOR EACH ROW
 BEGIN
     :NEW.numero_tessera := numero_tessera_seq.NEXTVAL;
 END;
 
+--ID SOTTOSCRIZIONE UTENTE--
+CREATE OR REPLACE TRIGGER id_sottoscrizione_trigger BEFORE
+INSERT ON sottoscrizione
+FOR EACH ROW
+BEGIN
+    :NEW.id_sottoscrizione := id_sottoscrizione_seq.NEXTVAL;
+END;
 
+--ID LEZIONE CORSO--
+CREATE OR REPLACE TRIGGER id_lezione_trigger BEFORE
+INSERT ON lezione_corso
+FOR EACH ROW
+BEGIN
+    :NEW.id_lezione := id_lezione_seq.NEXTVAL;
+END;
+
+--ID SCONTRINO SCONTRINO--
+CREATE OR REPLACE TRIGGER id_scontrino_trigger BEFORE
+INSERT ON scontrino
+FOR EACH ROW
+BEGIN
+    :NEW.id_scontrino := id_scontrino_seq.NEXTVAL;
+END;
 
 
