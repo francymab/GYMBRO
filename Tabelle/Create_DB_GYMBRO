@@ -407,7 +407,6 @@ CREATE TABLE Prenotazione (
     fk_piscina_via      VARCHAR2(30),
     fk_piscina_civico   VARCHAR2(5),
     fk_piscina_cap      NUMBER(5, 0),
-    numero_ore          NUMBER(1, 0) CHECK ( numero_ore BETWEEN 1 AND 3 ) NOT NULL,
     prezzo_prenotazione NUMBER(5, 2) CHECK ( prezzo_prenotazione > 0 ) NOT NULL,    
   
     -- VINCOLI DI CHIAVE PRIMARIA --  
