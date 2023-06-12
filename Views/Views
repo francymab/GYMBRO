@@ -89,7 +89,7 @@ CREATE OR REPLACE VIEW view_guadagno_mensile AS
     FROM Sottoscrizione
         JOIN tipologia_abbonamento ON fk_abbonamento_nome = nome_tipologia_abbonamento
     WHERE
-        data_inizio_sottoscrzione >= add_months(sysdate, - 1)
+        data_inizio_sottoscrizione >= add_months(sysdate, - 1)
     GROUP BY
         fk_sede_via,
         fk_sede_civico,

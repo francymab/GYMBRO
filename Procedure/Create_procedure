@@ -204,7 +204,7 @@ CREATE OR REPLACE PROCEDURE compila_scheda( data_inizio_scheda VARCHAR2,
     END;
     
 --VENDITA PRODOTTI--
-CREATE OR REPLACE PROCEDURE vendita_prodotti(sede_via VARCHAR2,
+create or replace PROCEDURE vendita_prodotti(sede_via VARCHAR2,
                                              sede_civico VARCHAR2,
                                              sede_cap VARCHAR2,
                                              codice_a_barre1 CHAR,
@@ -284,27 +284,21 @@ CREATE OR REPLACE PROCEDURE vendita_prodotti(sede_via VARCHAR2,
 
         --aggiorniamo la giacenza di tutti i prodotti ed inseriamo la vendita--
         INSERT INTO Vendita VALUES(id_scontrino_seq.currval, codice_a_barre1, quantita_venduta1);
-        UPDATE Prodotto SET giacenza = (giacenza - quantita_venduta1) WHERE codice_a_barre = codice_a_barre1;
-
 
         IF (codice_a_barre2 IS NOT NULL) THEN
             INSERT INTO Vendita VALUES(id_scontrino_seq.currval, codice_a_barre2, quantita_venduta2);
-            UPDATE Prodotto SET giacenza = (giacenza - quantita_venduta2) WHERE codice_a_barre = codice_a_barre2;
         END IF;
 
         IF (codice_a_barre3 IS NOT NULL) THEN
             INSERT INTO Vendita VALUES(id_scontrino_seq.currval, codice_a_barre3, quantita_venduta3);
-            UPDATE Prodotto SET giacenza = (giacenza - quantita_venduta3) WHERE codice_a_barre = codice_a_barre3;
         END IF;
 
         IF (codice_a_barre4 IS NOT NULL) THEN
             INSERT INTO Vendita VALUES(id_scontrino_seq.currval, codice_a_barre4, quantita_venduta4);
-            UPDATE Prodotto SET giacenza = (giacenza - quantita_venduta4) WHERE codice_a_barre = codice_a_barre4;
         END IF;
 
         IF (codice_a_barre5 IS NOT NULL) THEN
             INSERT INTO Vendita VALUES(id_scontrino_seq.currval, codice_a_barre5, quantita_venduta5);
-            UPDATE Prodotto SET giacenza = (giacenza - quantita_venduta5) WHERE codice_a_barre = codice_a_barre5;
         END IF;
 
     EXCEPTION
@@ -427,7 +421,7 @@ CREATE OR REPLACE PROCEDURE assunzione(numero_persona    CHAR,
                                        codice_fiscale    CHAR,
                                        data_di_nascita   VARCHAR2,
                                        codice_ibanX      CHAR,
-                                       mansioneX         VARCHAR,
+                                       mansioneX         VARCHAR2,
                                        nome              VARCHAR2 := NULL,
                                        cognome           VARCHAR2 := NULL,
                                        genere            CHAR := NULL,
@@ -436,7 +430,7 @@ CREATE OR REPLACE PROCEDURE assunzione(numero_persona    CHAR,
                                        cap_persona       NUMBER := NULL,
                                        telefono          CHAR := NULL,
                                        stipendioX        NUMBER := NULL,
-                                       titolo_di_studioX VARCHAR :=NULL)
+                                       titolo_di_studioX VARCHAR2 :=NULL)
     AS
         sede_exc EXCEPTION;
 
@@ -532,3 +526,117 @@ CREATE OR REPLACE PROCEDURE assunzione(numero_persona    CHAR,
 
         END IF;
     END;
+    
+--PAGAMENTO UTENZA--
+CREATE OR REPLACE PROCEDURE pagamento_utenze(via_sede VARCHAR2, 
+                                             civico_sede VARCHAR2, 
+                                             cap_sede NUMBER) 
+AS
+BEGIN
+    UPDATE Utenza SET pagamento_utenza = 'S' 
+        WHERE fk_sede_via = via_sede AND fk_sede_civico = civico_sede AND fk_sede_cap = cap_sede;
+END;
+
+--RINNOVO SOTTOSCRIZIONE--
+CREATE OR REPLACE PROCEDURE rinnovo_sottoscrizione(numero_utente CHAR, 
+                                                   nome_abbonamento VARCHAR2, 
+                                                   via_sede VARCHAR2 := NULL, 
+                                                   civico_sede VARCHAR2 := NULL, 
+                                                   cap_sede NUMBER := NULL) 
+AS 
+    pagamento_exc EXCEPTION; 
+    sede_exc EXCEPTION;
+    
+    sottoscrizione_pagata Sottoscrizione.ha_pagato%TYPE; 
+    stato_sedeX Sede.stato_sede%type;
+    BEGIN 
+        SELECT ha_pagato INTO sottoscrizione_pagata FROM Sottoscrizione 
+        WHERE fk_utente = numero_utente AND fk_abbonamento_nome = nome_abbonamento; 
+        
+        IF(sottoscrizione_pagata = 'S') THEN 
+            RAISE pagamento_exc; 
+        END IF; 
+        
+        IF(via_sede IS NULL AND civico_sede IS NULL AND cap_sede IS NULL) THEN 
+            UPDATE Sottoscrizione SET ha_pagato = 'S' 
+                WHERE fk_utente = numero_utente AND fk_abbonamento_nome = nome_abbonamento; 
+        ELSE 
+            SELECT stato_sede INTO stato_sedeX FROM Sede WHERE Sede.via_sede = via_sede AND
+                                      Sede.civico_sede = civico_sede AND Sede.cap_sede = cap_sede;
+            IF (stato_sedeX = 'NON ATTIVO') THEN
+                RAISE sede_exc;
+            END IF;
+            
+            UPDATE Sottoscrizione SET ha_pagato = 'S', fk_sede_via = via_sede, 
+                                      fk_sede_civico = civico_sede, fk_sede_cap = cap_sede 
+            WHERE fk_utente = numero_utente AND fk_abbonamento_nome = nome_abbonamento; 
+        END IF; 
+    
+    EXCEPTION 
+        WHEN pagamento_exc THEN 
+            RAISE_APPLICATION_ERROR('-20200', 'LA SOTTOSCRIZIONE ( ' || nome_abbonamento || ' ) DI ' || numero_utente || ' RISULTA PAGATA');     
+        WHEN sede_exc THEN 
+            RAISE_APPLICATION_ERROR('-20201', 'LA SEDE NON È ATTIVA');     
+END;
+
+--VERIFICA ENTRATA--
+CREATE OR REPLACE PROCEDURE verifica_entrata(numero_tessera_utente CHAR) AS         
+    CURSOR C IS 
+        SELECT ha_pagato AS pagamento_cur, data_fine_sottoscrizione AS scadenza_cur 
+        FROM Sottoscrizione JOIN UTENTE ON fk_utente = fk_persona 
+        WHERE fk_utente = numero_tessera_utente;
+        
+    info_utente C%rowtype;         
+    counter_sottoscrizioni NUMBER := 0;         
+    tot_sottoscrizioni NUMBER := 0;         
+
+BEGIN         
+    SELECT COUNT(id_sottoscrizione) INTO tot_sottoscrizioni FROM Sottoscrizione 
+        WHERE fk_utente = numero_tessera_utente;         
+    
+    FOR info_utente IN C LOOP              
+        IF(info_utente.pagamento_cur = 'N' OR info_utente.scadenza_cur <= SYSDATE) THEN         
+            counter_sottoscrizioni := counter_sottoscrizioni + 1;     		     
+        END IF;         
+    END LOOP;         
+    
+    IF(counter_sottoscrizioni < tot_sottoscrizioni) THEN         
+        dbms_output.put_line('L''utente può entrare'); 
+    ELSE         
+        dbms_output.put_line('L''utente non può entrare');         
+    END IF;         
+END;
+
+--PRENOTAZIONE PISCINA--
+CREATE OR REPLACE PROCEDURE prenotazione_piscina(numero_utente CHAR, 
+                                                 via_piscina VARCHAR2, 
+                                                 civico_piscina VARCHAR2, 
+                                                 cap_piscina NUMBER, 
+                                                 numero_piscina NUMBER, 
+                                                 data_prenotazione VARCHAR2) 
+AS
+    sede_exc EXCEPTION;
+    stato_sedeX Sede.stato_sede%TYPE;
+    
+    data_prenotazioneX TIMESTAMP := to_timestamp(data_prenotazione, 'DD/MM/YYYY HH24:MI');
+
+BEGIN
+    SELECT stato_sede INTO stato_sedeX FROM Sede 
+    WHERE via_sede = via_piscina AND civico_sede = civico_piscina AND cap_sede = cap_piscina;
+    
+    IF(stato_sedeX = 'NON ATTIVO') THEN
+        RAISE sede_exc;
+    END IF;
+    
+    INSERT INTO Prenotazione VALUES(data_prenotazioneX, numero_utente, 
+                                    numero_piscina, via_piscina, civico_piscina, 
+                                    cap_piscina, 20.00);
+
+EXCEPTION
+    WHEN sede_exc THEN 
+        RAISE_APPLICATION_ERROR('-20202', 'LA SEDE NON È ATTIVA');
+END;
+
+
+
+

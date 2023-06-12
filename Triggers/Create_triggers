@@ -252,29 +252,91 @@ EXCEPTION
 END;
 
 --CONTROLLO CAPIENZA MASSIMA PISCINA--
-CREATE OR REPLACE TRIGGER check_capienza_piscina     
-BEFORE INSERT ON Prenotazione    
-FOR EACH ROW     
-DECLARE     
-    capienza_exc EXCEPTION;
-    
-    numero_persone NUMBER := 0;
-    capienza_piscina NUMBER := 0;
-    
-BEGIN  
-    SELECT COUNT(fk_utente) INTO numero_persone
-        FROM Prenotazione WHERE data_ora_prenotazione = :NEW.data_ora_prenotazione
-            AND fk_piscina_numero = :NEW.fk_piscina_numero AND fk_piscina_via = :NEW.fk_piscina_via
+CREATE OR REPLACE TRIGGER check_capienza_piscina         
+BEFORE INSERT ON Prenotazione        
+FOR EACH ROW         
+DECLARE         
+    capienza_exc EXCEPTION;    
+        
+    numero_persone NUMBER := 0;    
+    capienza_piscina NUMBER := 0;    
+        
+BEGIN      
+    SELECT COUNT(fk_utente) INTO numero_persone    
+        FROM Prenotazione WHERE (data_ora_prenotazione + INTERVAL '59' MINUTE) 
+            BETWEEN :NEW.data_ora_prenotazione AND (:NEW.data_ora_prenotazione + INTERVAL '1' HOUR)   
+            AND fk_piscina_numero = :NEW.fk_piscina_numero AND fk_piscina_via = :NEW.fk_piscina_via    
+            AND fk_piscina_cap = :NEW.fk_piscina_cap AND fk_piscina_civico = :NEW.fk_piscina_civico;    
+        
+    SELECT capienza INTO capienza_piscina FROM Piscina     
+        WHERE numero_piscina = :NEW.fk_piscina_numero AND fk_sede_via = :NEW.fk_piscina_via    
+        AND fk_sede_cap = :NEW.fk_piscina_cap AND fk_sede_civico = :NEW.fk_piscina_civico;    
+       
+    IF (numero_persone = capienza_piscina) THEN    
+        RAISE capienza_exc;    
+    END IF;    
+EXCEPTION         
+    WHEN capienza_exc THEN    
+        RAISE_APPLICATION_ERROR('-20180', 'È STATA RAGGIUNTA GIÀ LA CAPIENZA MASSIMA PER QUELLA PISCINA NELLA DATA E ORA: ' || :NEW.data_ora_prenotazione);    
+END; 
+
+--MASSIME ISCRIZIONI AD UN CORSO DI UNA SEDE--
+CREATE OR REPLACE TRIGGER chk_utenti_corso
+BEFORE INSERT ON Sottoscrizione 
+FOR EACH ROW
+DECLARE
+    utenti_corsoX NUMBER := 0;
+    max_utenti_exc EXCEPTION;
+
+    CURSOR C 
+    IS 
+    SELECT fk_corso AS nome_c FROM Compreso WHERE fk_abbonamento_nome = :NEW.fk_abbonamento_nome;
+BEGIN 
+    FOR rec IN C
+    LOOP
+        dbms_output.put_line(rec.nome_c);
+        select count(fk_utente) INTO utenti_corsoX from sottoscrizione join compreso ON sottoscrizione.fk_abbonamento_nome = compreso.fk_abbonamento_nome
+        where fk_corso = rec.nome_c AND fk_sede_via = :NEW.fk_sede_via
+        AND fk_sede_cap = :NEW.fk_sede_cap AND fk_sede_civico = :NEW.fk_sede_civico;
+
+        IF (utenti_corsoX = 75) THEN
+            RAISE max_utenti_exc;
+        END IF;
+    END LOOP;
+
+EXCEPTION
+    WHEN max_utenti_exc THEN
+        RAISE_APPLICATION_ERROR('-20180', 'NUMERO MASSIMO DI UTENTI ISCRITTI ');
+END;
+
+--PAGAMENTO DELLA SOTTOSCRIZIONE--
+CREATE OR REPLACE TRIGGER chk_sottoscrizione_pagata 
+BEFORE UPDATE OF ha_pagato ON Sottoscrizione 
+FOR EACH ROW 
+BEGIN 
+    :NEW.data_inizio_sottoscrizione := SYSDATE; 
+    :NEW.data_fine_sottoscrizione := add_months(SYSDATE, :NEW.fk_abbonamento_durata); 
+END;
+
+--CONTROLLO PRENOTAZIONE STESSO UTENTE--
+create or replace TRIGGER chk_utente_prenotato
+BEFORE INSERT ON PRENOTAZIONE 
+FOR EACH ROW
+DECLARE
+    prenotazione_exc EXCEPTION;
+
+    count_prenotazione NUMBER := 0;
+BEGIN 
+    SELECT COUNT(fk_utente) INTO count_prenotazione FROM Prenotazione 
+        WHERE fk_utente = :NEW.fk_utente AND
+        data_ora_prenotazione BETWEEN (:NEW.data_ora_prenotazione - INTERVAL '1' HOUR) AND :NEW.data_ora_prenotazione   
+            AND fk_piscina_numero = :NEW.fk_piscina_numero AND fk_piscina_via = :NEW.fk_piscina_via    
             AND fk_piscina_cap = :NEW.fk_piscina_cap AND fk_piscina_civico = :NEW.fk_piscina_civico;
-    
-    SELECT capienza INTO capienza_piscina FROM Piscina 
-        WHERE numero_piscina = :NEW.fk_piscina_numero AND fk_sede_via = :NEW.fk_piscina_via
-        AND fk_sede_cap = :NEW.fk_piscina_cap AND fk_sede_civico = :NEW.fk_piscina_civico;
-   
-    IF (numero_persone > capienza_piscina) THEN
-        RAISE capienza_exc;
-    END IF;
-EXCEPTION     
-    WHEN capienza_exc THEN
-        RAISE_APPLICATION_ERROR('-20180', 'È STATA RAGGIUNTA GIÀ LA CAPIENZA MASSIMA PER QUELLA PISCINA NELLA DATA E ORA: ' || :NEW.data_ora_prenotazione);
+
+        IF (count_prenotazione > 0) THEN
+            RAISE prenotazione_exc;
+        END IF;
+EXCEPTION
+    WHEN prenotazione_exc THEN
+        RAISE_APPLICATION_ERROR('-20185', 'L'' UTENTE HA GIÀ EFFETTUATO LA PRENOTAZIONE NELLA STESSA PISCINA NELL''ARCO DI 1H');
 END;
