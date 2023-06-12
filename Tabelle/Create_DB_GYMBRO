@@ -296,18 +296,18 @@ CREATE TABLE lezione_corso (
 -----SOTTOSCRIZIONE-----
 CREATE TABLE Sottoscrizione (  
     -- ATTRIBUTI --  
-    id_sottoscrizione         NUMBER(6, 0) PRIMARY KEY,
-    fk_utente                 CHAR(9) NOT NULL,
-    fk_abbonamento_nome       VARCHAR2(100) NOT NULL,
-    fk_abbonamento_durata     NUMBER(2, 0) NOT NULL,
-    fk_sede_via               VARCHAR2(30) NOT NULL,
-    fk_sede_civico            VARCHAR2(5) NOT NULL,
-    fk_sede_cap               NUMBER(5, 0) NOT NULL,
-    data_inizio_sottoscrzione DATE DEFAULT current_date NOT NULL,
-    data_fine_sottoscrizione  DATE,
-    ha_pagato                 CHAR(1) DEFAULT 'S' CHECK ( UPPER(ha_pagato) = 'S'
+    id_sottoscrizione          NUMBER(6, 0) PRIMARY KEY,
+    fk_utente                  CHAR(9) NOT NULL,
+    fk_abbonamento_nome        VARCHAR2(100) NOT NULL,
+    fk_abbonamento_durata      NUMBER(2, 0) NOT NULL,
+    fk_sede_via                VARCHAR2(30) NOT NULL,
+    fk_sede_civico             VARCHAR2(5) NOT NULL,
+    fk_sede_cap                NUMBER(5, 0) NOT NULL,
+    data_inizio_sottoscrizione DATE DEFAULT current_date NOT NULL,
+    data_fine_sottoscrizione   DATE,
+    ha_pagato                  CHAR(1) DEFAULT 'S' CHECK ( UPPER(ha_pagato) = 'S'
                                                         OR UPPER(ha_pagato) = 'N' ),
-    certificato_medico        CHAR(1) DEFAULT 'S' CHECK ( UPPER(certificato_medico) = 'S'
+    certificato_medico         CHAR(1) DEFAULT 'S' CHECK ( UPPER(certificato_medico) = 'S'
                                                         OR UPPER(certificato_medico) = 'N' ),  
   
     -- VINCOLI DI CHIAVE ESTERNA --  

@@ -204,7 +204,7 @@ CREATE OR REPLACE PROCEDURE compila_scheda( data_inizio_scheda VARCHAR2,
     END;
     
 --VENDITA PRODOTTI--
-create or replace PROCEDURE vendita_prodotti(sede_via VARCHAR2,
+CREATE OR REPLACE PROCEDURE vendita_prodotti(sede_via VARCHAR2,
                                              sede_civico VARCHAR2,
                                              sede_cap VARCHAR2,
                                              codice_a_barre1 CHAR,
@@ -314,7 +314,7 @@ create or replace PROCEDURE vendita_prodotti(sede_via VARCHAR2,
     END;
 
 --SOTTOSCRIZIONE UTENTE--
-create or replace PROCEDURE sottoscrizione_utente (numero_persona   CHAR,  
+CREATE OR REPLACE PROCEDURE sottoscrizione_utente (numero_persona   CHAR,  
                                                    nome_abbonamento VARCHAR2,  
                                                    via_sedeX         VARCHAR2,  
                                                    civico_sedeX      VARCHAR2,  
@@ -418,3 +418,117 @@ CREATE OR REPLACE PROCEDURE Licenziamento_dipendente(numero_documento CHAR) AS
 BEGIN  
     UPDATE Dipendente SET data_di_licenziamento = SYSDATE WHERE Dipendente.fk_persona = numero_documento;  
 END;
+
+--ASSUNZIONE--
+CREATE OR REPLACE PROCEDURE assunzione(numero_persona    CHAR,
+                                       via_sedeX         VARCHAR2,
+                                       civico_sedeX      VARCHAR2,
+                                       cap_sedeX         NUMBER,
+                                       codice_fiscale    CHAR,
+                                       data_di_nascita   VARCHAR2,
+                                       codice_ibanX      CHAR,
+                                       mansioneX         VARCHAR,
+                                       nome              VARCHAR2 := NULL,
+                                       cognome           VARCHAR2 := NULL,
+                                       genere            CHAR := NULL,
+                                       via_persona       VARCHAR2 := NULL,
+                                       civico_persona    VARCHAR2 := NULL,
+                                       cap_persona       NUMBER := NULL,
+                                       telefono          CHAR := NULL,
+                                       stipendioX        NUMBER := NULL,
+                                       titolo_di_studioX VARCHAR :=NULL)
+    AS
+        sede_exc EXCEPTION;
+
+        chk_dipendente NUMBER;
+        data_di_nascitaX DATE := TO_DATE ( data_di_nascita, 'DD/MM/YYYY' );
+
+        stato_sedeX Sede.stato_sede%type;
+        data_licenziamento DATE;
+    BEGIN
+        --controlliamo se la sede è attiva o meno--
+        SELECT stato_sede INTO stato_sedeX FROM Sede 
+            WHERE via_sede = via_sedeX AND civico_sede = civico_sedeX AND cap_sede = cap_sedeX;
+
+        IF (stato_sedeX = 'NON ATTIVO') THEN
+            RAISE sede_exc;
+        END IF;
+
+        SELECT COUNT(fk_persona) INTO chk_dipendente FROM Dipendente WHERE fk_persona = numero_persona;
+
+        IF (chk_dipendente = 1) THEN
+            IF(stipendioX IS NULL) THEN
+                UPDATE Dipendente SET fk_sede_via = via_sedeX, 
+                                      fk_sede_civico = civico_sedeX, 
+                                      fk_sede_cap = cap_sedeX, 
+                                      data_di_licenziamento = NULL,
+                                      stipendio_mensile = DEFAULT
+                WHERE fk_persona = numero_persona;
+            ELSE
+                UPDATE Dipendente SET fk_sede_via = via_sedeX, 
+                                      fk_sede_civico = civico_sedeX, 
+                                      fk_sede_cap = cap_sedeX, 
+                                      data_di_licenziamento = NULL,
+                                      stipendio_mensile = stipendioX
+                WHERE fk_persona = numero_persona;
+            END IF;
+        ELSE
+            --inseriamo la persona--
+            INSERT INTO persona (numero_documento_persona,
+                                 nome_persona,
+                                 cognome_persona,
+                                 genere_persona,
+                                 codice_fiscale_persona,
+                                 data_di_nascita,
+                                 via_persona,
+                                 civico_persona,
+                                 cap_persona,
+                                 telefono_persona)
+                VALUES (
+                    numero_persona,
+                    nome,
+                    cognome,
+                    genere,
+                    codice_fiscale,
+                    data_di_nascitaX,
+                    via_persona,
+                    civico_persona,
+                    cap_persona,
+                    telefono);
+
+            IF(stipendioX IS NULL) THEN
+                INSERT INTO Dipendente(fk_persona, 
+                       codice_iban, 
+                       mansione,  
+                       titolo_di_studio, 
+                       fk_sede_via, 
+                       fk_sede_civico, 
+                       fk_sede_cap)
+                VALUES(numero_persona, 
+                       codice_ibanX, 
+                       mansioneX, 
+                       titolo_di_studioX, 
+                       via_sedeX, 
+                       civico_sedeX, 
+                       cap_sedeX);
+            ELSE
+                INSERT INTO Dipendente(fk_persona, 
+                       codice_iban, 
+                       mansione, 
+                       stipendio_mensile, 
+                       titolo_di_studio, 
+                       fk_sede_via, 
+                       fk_sede_civico, 
+                       fk_sede_cap)
+                VALUES(numero_persona, 
+                       codice_ibanX, 
+                       mansioneX, 
+                       stipendioX, 
+                       titolo_di_studioX, 
+                       via_sedeX, 
+                       civico_sedeX, 
+                       cap_sedeX);
+            END IF;
+
+        END IF;
+    END;
