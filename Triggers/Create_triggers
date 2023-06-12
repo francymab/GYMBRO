@@ -192,7 +192,7 @@ EXCEPTION
 END;
 
 --MAX PRODOTTI VENDUTI--
-create or replace TRIGGER max_prodotti_venduti     
+CREATE OR REPLACE TRIGGER max_prodotti_venduti     
 BEFORE INSERT ON VENDITA     
 FOR EACH ROW     
 DECLARE     
@@ -211,4 +211,69 @@ BEGIN
 EXCEPTION     
     WHEN giacenza_exc THEN 
             RAISE_APPLICATION_ERROR('-20101', 'LA GIACENZA DEL PRODOTTO ' || :NEW.fk_prodotto || ' È MINORE DELLA QUANTITA CHE SI VUOL VENDERE, GIACENZA: ' || giacenzaX);
+END;
+
+--CONTROLLO DATA PRENOTAZIONE--
+CREATE OR REPLACE TRIGGER chk_data_prenotazione
+BEFORE INSERT ON Prenotazione 
+FOR EACH ROW
+DECLARE
+    date_exc EXCEPTION;
+BEGIN 
+    IF (:NEW.data_ora_prenotazione < CURRENT_TIMESTAMP) THEN
+        RAISE date_exc;
+    END IF;
+EXCEPTION
+    WHEN date_exc THEN
+        RAISE_APPLICATION_ERROR('-20175', 'DATA ED ORA INIZIO MINORI DI: ' || CURRENT_TIMESTAMP);
+END;
+
+--CONTROLLO NUMERO LEZIONI GIORNALIERE--
+CREATE OR REPLACE TRIGGER chk_numero_lezione_giornaliere
+BEFORE INSERT ON Lezione_corso 
+FOR EACH ROW
+DECLARE
+    lezioni_giornaliere_exc EXCEPTION;
+    
+    numero_lezioni NUMBER := 0;
+BEGIN 
+    
+    SELECT COUNT(id_lezione) INTO numero_lezioni
+        FROM Lezione_corso 
+        WHERE giorno_settimana_lezione = :NEW.giorno_settimana_lezione;
+    
+    IF (numero_lezioni >= 5) THEN
+        RAISE lezioni_giornaliere_exc;
+    END IF;
+EXCEPTION
+    WHEN lezioni_giornaliere_exc THEN
+        RAISE_APPLICATION_ERROR('-20176', 'CI SONO GIÀ 5 LEZIONI PER QESTO GIORNO');
+END;
+
+--CONTROLLO CAPIENZA MASSIMA PISCINA--
+CREATE OR REPLACE TRIGGER check_capienza_piscina     
+BEFORE INSERT ON Prenotazione    
+FOR EACH ROW     
+DECLARE     
+    capienza_exc EXCEPTION;
+    
+    numero_persone NUMBER := 0;
+    capienza_piscina NUMBER := 0;
+    
+BEGIN  
+    SELECT COUNT(fk_utente) INTO numero_persone
+        FROM Prenotazione WHERE data_ora_prenotazione = :NEW.data_ora_prenotazione
+            AND fk_piscina_numero = :NEW.fk_piscina_numero AND fk_piscina_via = :NEW.fk_piscina_via
+            AND fk_piscina_cap = :NEW.fk_piscina_cap AND fk_piscina_civico = :NEW.fk_piscina_civico;
+    
+    SELECT capienza INTO capienza_piscina FROM Piscina 
+        WHERE numero_piscina = :NEW.fk_piscina_numero AND fk_sede_via = :NEW.fk_piscina_via
+        AND fk_sede_cap = :NEW.fk_piscina_cap AND fk_sede_civico = :NEW.fk_piscina_civico;
+   
+    IF (numero_persone > capienza_piscina) THEN
+        RAISE capienza_exc;
+    END IF;
+EXCEPTION     
+    WHEN capienza_exc THEN
+        RAISE_APPLICATION_ERROR('-20180', 'È STATA RAGGIUNTA GIÀ LA CAPIENZA MASSIMA PER QUELLA PISCINA NELLA DATA E ORA: ' || :NEW.data_ora_prenotazione);
 END;
