@@ -229,19 +229,20 @@ EXCEPTION
 END;
 
 --CONTROLLO NUMERO LEZIONI GIORNALIERE--
-CREATE OR REPLACE TRIGGER chk_numero_lezione_giornaliere
+create or replace TRIGGER chk_numero_lezione_giornaliere
 BEFORE INSERT ON Lezione_corso 
 FOR EACH ROW
 DECLARE
     lezioni_giornaliere_exc EXCEPTION;
-    
+
     numero_lezioni NUMBER := 0;
 BEGIN 
-    
+
     SELECT COUNT(id_lezione) INTO numero_lezioni
         FROM Lezione_corso 
-        WHERE giorno_settimana_lezione = :NEW.giorno_settimana_lezione;
-    
+        WHERE giorno_settimana_lezione = :NEW.giorno_settimana_lezione AND fk_sala_via = :NEW.fk_sala_via
+        AND fk_sala_cap = :NEW.fk_sala_cap AND fk_sala_civico = :NEW.fk_sala_civico;
+
     IF (numero_lezioni >= 5) THEN
         RAISE lezioni_giornaliere_exc;
     END IF;
