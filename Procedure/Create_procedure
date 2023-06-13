@@ -1,0 +1,713 @@
+--CREATE PROCEDURE
+
+--CREAZIONE TIPOLOGIA ABBONAMENTO--
+CREATE OR REPLACE PROCEDURE creazione_abbonamento(nome_tipologia_abbonamento VARCHAR2,
+                                                  durata_abbonamento NUMBER,
+                                                  costo_abbonamento NUMBER,
+                                                  nome_corso1 VARCHAR2,
+                                                  obiettivo1 VARCHAR2 := NULL,
+                                                  nome_corso2 VARCHAR2 := NULL,
+                                                  obiettivo2 VARCHAR2 := NULL,
+                                                  nome_corso3 VARCHAR2 := NULL,
+                                                  obiettivo3 VARCHAR2 := NULL,
+                                                  nome_corso4 VARCHAR2 := NULL,
+                                                  obiettivo4 VARCHAR2 := NULL)
+    AS
+
+    BEGIN
+        --si crea la tipologia abbonamento--
+        INSERT INTO Tipologia_abbonamento VALUES (nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento);
+
+        --si controlla se il corso non esiste e nel caso lo si crea--
+        INSERT INTO corso (nome_corso, obiettivo) 
+            SELECT nome_corso1, obiettivo1 
+            FROM dual 
+            WHERE NOT EXISTS(SELECT * FROM corso WHERE nome_corso = nome_corso1);
+
+        --si associa il corso alla tipologia abbonamento--
+        INSERT INTO Compreso VALUES (nome_corso1, nome_tipologia_abbonamento, durata_abbonamento);
+
+        --si controlla se si vuole aggiunge un ulteriore corso all'abbonamento--
+        IF (nome_corso2 IS NOT NULL) THEN
+            --si controlla se il corso non esiste e nel caso lo si crea--
+            INSERT INTO corso (nome_corso, obiettivo) 
+                SELECT nome_corso2, obiettivo2 
+                FROM dual 
+                WHERE NOT EXISTS(SELECT * FROM corso WHERE nome_corso = nome_corso2);
+
+            --si associa il corso alla tipologia abbonamento--
+            INSERT INTO Compreso VALUES (nome_corso2, nome_tipologia_abbonamento, durata_abbonamento);
+        END IF;
+
+        --si controlla se si vuole aggiunge un ulteriore corso all'abbonamento--        
+        IF (nome_corso3 IS NOT NULL) THEN
+            --si controlla se il corso non esiste e nel caso lo si crea--
+            INSERT INTO corso (nome_corso, obiettivo) 
+                SELECT nome_corso3, obiettivo3 
+                FROM dual 
+                WHERE NOT EXISTS(SELECT * FROM corso WHERE nome_corso = nome_corso3);
+
+            --si associa il corso alla tipologia abbonamento--
+            INSERT INTO Compreso VALUES (nome_corso3, nome_tipologia_abbonamento, durata_abbonamento);
+        END IF;
+
+        --si controlla se si vuole aggiunge un ulteriore corso all'abbonamento--
+        IF (nome_corso4 IS NOT NULL) THEN
+            --si controlla se il corso non esiste e nel caso lo si crea--
+            INSERT INTO corso (nome_corso, obiettivo) 
+                SELECT nome_corso4, obiettivo4 
+                FROM dual 
+                WHERE NOT EXISTS(SELECT * FROM corso WHERE nome_corso = nome_corso4);
+
+            --si associa il corso alla tipologia abbonamento--
+            INSERT INTO Compreso VALUES (nome_corso4, nome_tipologia_abbonamento, durata_abbonamento);
+        END IF;
+
+    END;
+    
+--COMPILA SCHEDA ALLENAMENTO--
+CREATE OR REPLACE PROCEDURE compila_scheda( data_inizio_scheda VARCHAR2,
+                                            data_fine_scheda VARCHAR2,
+                                            fk_scheda_utente CHAR,
+                                            fk_dipendente CHAR,
+                                            numero_serie NUMBER,
+                                            fk_esercizio VARCHAR2,
+                                            peso NUMBER,
+                                            numero_ripetizioni NUMBER,
+                                            secondi_di_recupero NUMBER,
+                                            numero_serie2 NUMBER := NULL,
+                                            fk_esercizio2 VARCHAR2 := NULL,
+                                            peso2 NUMBER := NULL,
+                                            numero_ripetizioni2 NUMBER := NULL,
+                                            secondi_di_recupero2 NUMBER := NULL,
+                                            numero_serie3 NUMBER := NULL,
+                                            fk_esercizio3 VARCHAR2 := NULL,
+                                            peso3 NUMBER := NULL,
+                                            numero_ripetizioni3 NUMBER := NULL,
+                                            secondi_di_recupero3 NUMBER := NULL,
+                                            numero_serie4 NUMBER := NULL,
+                                            fk_esercizio4 VARCHAR2 := NULL,
+                                            peso4 NUMBER := NULL,
+                                            numero_ripetizioni4 NUMBER := NULL,
+                                            secondi_di_recupero4 NUMBER := NULL,
+                                            numero_serie5 NUMBER := NULL,
+                                            fk_esercizio5 VARCHAR2 := NULL,
+                                            peso5 NUMBER := NULL,
+                                            numero_ripetizioni5 NUMBER := NULL,
+                                            secondi_di_recupero5 NUMBER := NULL,
+                                            numero_serie6 NUMBER := NULL,
+                                            fk_esercizio6 VARCHAR2 := NULL,
+                                            peso6 NUMBER := NULL,
+                                            numero_ripetizioni6 NUMBER := NULL,
+                                            secondi_di_recupero6 NUMBER := NULL,
+                                            numero_serie7 NUMBER := NULL,
+                                            fk_esercizio7 VARCHAR2 := NULL,
+                                            peso7 NUMBER := NULL,
+                                            numero_ripetizioni7 NUMBER := NULL,
+                                            secondi_di_recupero7 NUMBER := NULL,
+                                            numero_serie8 NUMBER := NULL,
+                                            fk_esercizio8 VARCHAR2 := NULL,
+                                            peso8 NUMBER := NULL,
+                                            numero_ripetizioni8 NUMBER := NULL,
+                                            secondi_di_recupero8 NUMBER := NULL,
+                                            numero_serie9 NUMBER := NULL,
+                                            fk_esercizio9 VARCHAR2 := NULL,
+                                            peso9 NUMBER := NULL,
+                                            numero_ripetizioni9 NUMBER := NULL,
+                                            secondi_di_recupero9 NUMBER := NULL) 
+    AS
+        mansione_dip dipendente.mansione%type;
+        abbonamento_sala_utente compreso%rowtype;
+        data_inizio_schedaX DATE := TO_DATE ( data_inizio_scheda, 'DD-MM-YY' );
+        data_fine_schedaX DATE := TO_DATE ( data_fine_scheda, 'DD-MM-YY' );
+
+
+        mansione_exc EXCEPTION;
+
+    BEGIN
+
+        --controlliamo se l'utente ha pagato e se ha consegnato il certificato medico--
+        SELECT * INTO abbonamento_sala_utente FROM Compreso 
+        WHERE Compreso.fk_abbonamento_nome 
+        IN (SELECT fk_abbonamento_nome 
+            FROM Sottoscrizione 
+            WHERE fk_utente = fk_scheda_utente 
+            AND UPPER(ha_pagato) = 'S' 
+            AND UPPER(certificato_medico) = 'S') 
+        AND LOWER(fk_corso) = 'sala';
+        
+
+        SELECT mansione INTO mansione_dip FROM dipendente WHERE fk_persona = fk_dipendente AND data_di_licenziamento IS NULL;
+
+        --controlliamo se la mansione del dipendente è diversa da istruttore oppure null--
+        IF(UPPER(mansione_dip) != 'ISTRUTTORE' OR mansione_dip IS NULL) THEN
+            RAISE mansione_exc; --viene lanciata l'eccezione
+        END IF;
+        dbms_output.put_line('ciao');
+        --creazione della scheda--
+        INSERT INTO Scheda_di_allenamento VALUES(data_inizio_schedaX, fk_scheda_utente, fk_dipendente, data_fine_schedaX);
+
+        --inserimento del primo esercizio--
+        INSERT INTO Contiene VALUES(numero_serie, data_inizio_schedaX, fk_scheda_utente, fk_esercizio, peso, numero_ripetizioni, secondi_di_recupero);
+
+        --controlliamo se i valori obbligatori non sono null inserendo poi l'esercizio--
+        IF ((numero_serie2 IS NOT NULL) AND (fk_esercizio2 IS NOT NULL) AND (secondi_di_recupero2 IS NOT NULL)) THEN
+            INSERT INTO Contiene 
+            VALUES(numero_serie2, data_inizio_schedaX, fk_scheda_utente, fk_esercizio2, peso2, numero_ripetizioni2, secondi_di_recupero2);
+        END IF;
+
+        --controlliamo se i valori obbligatori non sono null inserendo poi l'esercizio--
+        IF ((numero_serie3 IS NOT NULL) AND (fk_esercizio3 IS NOT NULL) AND (secondi_di_recupero3 IS NOT NULL)) THEN
+            INSERT INTO Contiene 
+            VALUES(numero_serie3, data_inizio_schedaX, fk_scheda_utente, fk_esercizio3, peso3, numero_ripetizioni3, secondi_di_recupero3);
+        END IF;
+
+        --controlliamo se i valori obbligatori non sono null inserendo poi l'esercizio--
+        IF ((numero_serie4 IS NOT NULL) AND (fk_esercizio4 IS NOT NULL) AND (secondi_di_recupero4 IS NOT NULL)) THEN
+            INSERT INTO Contiene 
+            VALUES(numero_serie4, data_inizio_schedaX, fk_scheda_utente, fk_esercizio4, peso4, numero_ripetizioni4, secondi_di_recupero4);
+        END IF;
+
+        --controlliamo se i valori obbligatori non sono null inserendo poi l'esercizio--
+        IF ((numero_serie5 IS NOT NULL) AND (fk_esercizio5 IS NOT NULL) AND (secondi_di_recupero5 IS NOT NULL)) THEN
+            INSERT INTO Contiene 
+            VALUES(numero_serie5, data_inizio_schedaX, fk_scheda_utente, fk_esercizio5, peso5, numero_ripetizioni5, secondi_di_recupero5);
+        END IF;
+
+        --controlliamo se i valori obbligatori non sono null inserendo poi l'esercizio--
+        IF ((numero_serie6 IS NOT NULL) AND (fk_esercizio6 IS NOT NULL) AND (secondi_di_recupero6 IS NOT NULL)) THEN
+            INSERT INTO Contiene 
+            VALUES(numero_serie6, data_inizio_schedaX, fk_scheda_utente, fk_esercizio6, peso6, numero_ripetizioni6, secondi_di_recupero6);
+        END IF;
+
+        --controlliamo se i valori obbligatori non sono null inserendo poi l'esercizio--
+        IF ((numero_serie7 IS NOT NULL) AND (fk_esercizio7 IS NOT NULL) AND (secondi_di_recupero7 IS NOT NULL)) THEN
+            INSERT INTO Contiene 
+            VALUES(numero_serie7, data_inizio_schedaX, fk_scheda_utente, fk_esercizio7, peso7, numero_ripetizioni7, secondi_di_recupero7);
+        END IF;
+
+        --controlliamo se i valori obbligatori non sono null inserendo poi l'esercizio--
+        IF ((numero_serie8 IS NOT NULL) AND (fk_esercizio8 IS NOT NULL) AND (secondi_di_recupero8 IS NOT NULL)) THEN
+            INSERT INTO Contiene 
+            VALUES(numero_serie8, data_inizio_schedaX, fk_scheda_utente, fk_esercizio8, peso8, numero_ripetizioni8, secondi_di_recupero8);
+        END IF;
+
+        --controlliamo se i valori obbligatori non sono null inserendo poi l'esercizio--
+        IF ((numero_serie9 IS NOT NULL) AND (fk_esercizio9 IS NOT NULL) AND (secondi_di_recupero9 IS NOT NULL)) THEN
+            INSERT INTO Contiene 
+            VALUES(numero_serie9, data_inizio_schedaX, fk_scheda_utente, fk_esercizio9, peso9, numero_ripetizioni9, secondi_di_recupero9);
+        END IF;
+
+    EXCEPTION
+        WHEN mansione_exc THEN 
+            RAISE_APPLICATION_ERROR('-20100', 'LA MANSIONE DEL DIPENDENTE È DIVERSA DA ISTRUTTORE: ' || mansione_dip);
+    END;
+    
+--VENDITA PRODOTTI--
+create or replace PROCEDURE vendita_prodotti(sede_via VARCHAR2,
+                                             sede_civico VARCHAR2,
+                                             sede_cap VARCHAR2,
+                                             codice_a_barre1 CHAR,
+                                             quantita_venduta1 NUMBER,
+                                             codice_a_barre2 CHAR := NULL,
+                                             quantita_venduta2 NUMBER := NULL,
+                                             codice_a_barre3 CHAR := NULL,
+                                             quantita_venduta3 NUMBER := NULL,
+                                             codice_a_barre4 CHAR := NULL,
+                                             quantita_venduta4 NUMBER := NULL,
+                                             codice_a_barre5 CHAR := NULL,
+                                             quantita_venduta5 NUMBER := NULL)
+    AS
+        sede_exc EXCEPTION;
+
+        prezzo_vendita_un Prodotto.prezzo_vendita_unitario%type;
+        prezzo_totX Scontrino.prezzo_totale%type := 0;
+        stato_sedeX Sede.stato_sede%type;
+
+    BEGIN
+
+        --controlliamo se la sede è attiva o meno--
+        SELECT stato_sede INTO stato_sedeX FROM Sede 
+            WHERE via_sede = sede_via AND civico_sede = sede_civico AND cap_sede = sede_cap;
+
+        IF (stato_sedeX = 'NON ATTIVO') THEN
+            RAISE sede_exc;
+        END IF;
+
+        --ricaviamo la giacenza del prodotto da vendere--
+        SELECT prezzo_vendita_unitario INTO prezzo_vendita_un 
+            FROM Prodotto where codice_a_barre = codice_a_barre1;
+
+        --calcolo del totale dello scontrino--
+        prezzo_totX := prezzo_totX + (prezzo_vendita_un * quantita_venduta1);
+
+
+        IF (codice_a_barre2 IS NOT NULL AND quantita_venduta2 IS NOT NULL) THEN
+            --ricaviamo la giacenza del prodotto da vendere--
+            SELECT prezzo_vendita_unitario INTO prezzo_vendita_un 
+                FROM Prodotto where codice_a_barre = codice_a_barre2;
+
+            --calcolo del totale dello scontrino--
+            prezzo_totX := prezzo_totX + (prezzo_vendita_un * quantita_venduta2);
+        END IF;
+
+        IF (codice_a_barre3 IS NOT NULL AND quantita_venduta3 IS NOT NULL) THEN
+            --ricaviamo la giacenza del prodotto da vendere--
+            SELECT prezzo_vendita_unitario INTO prezzo_vendita_un 
+                FROM Prodotto where codice_a_barre = codice_a_barre3;
+
+            --calcolo del totale dello scontrino--
+            prezzo_totX := prezzo_totX + (prezzo_vendita_un * quantita_venduta3);
+        END IF;
+
+        IF (codice_a_barre4 IS NOT NULL AND quantita_venduta4 IS NOT NULL) THEN
+            --ricaviamo la giacenza del prodotto da vendere--
+            SELECT prezzo_vendita_unitario INTO prezzo_vendita_un 
+                FROM Prodotto where codice_a_barre = codice_a_barre4;
+
+            --calcolo del totale dello scontrino--
+            prezzo_totX := prezzo_totX + (prezzo_vendita_un * quantita_venduta4);
+        END IF;
+
+        IF (codice_a_barre5 IS NOT NULL AND quantita_venduta5 IS NOT NULL) THEN
+            --ricaviamo la giacenza del prodotto da vendere--
+            SELECT prezzo_vendita_unitario INTO prezzo_vendita_un 
+                FROM Prodotto where codice_a_barre = codice_a_barre5;
+
+            --calcolo del totale dello scontrino--
+            prezzo_totX := prezzo_totX + (prezzo_vendita_un * quantita_venduta5);
+        END IF;
+
+        --creazione scontrino--
+        INSERT INTO Scontrino (fk_sede_via, fk_sede_civico, fk_sede_cap, prezzo_totale)
+            VALUES (sede_via, sede_civico, sede_cap, prezzo_totX);
+
+        --aggiorniamo la giacenza di tutti i prodotti ed inseriamo la vendita--
+        INSERT INTO Vendita VALUES(id_scontrino_seq.currval, codice_a_barre1, quantita_venduta1);
+
+        IF (codice_a_barre2 IS NOT NULL) THEN
+            INSERT INTO Vendita VALUES(id_scontrino_seq.currval, codice_a_barre2, quantita_venduta2);
+        END IF;
+
+        IF (codice_a_barre3 IS NOT NULL) THEN
+            INSERT INTO Vendita VALUES(id_scontrino_seq.currval, codice_a_barre3, quantita_venduta3);
+        END IF;
+
+        IF (codice_a_barre4 IS NOT NULL) THEN
+            INSERT INTO Vendita VALUES(id_scontrino_seq.currval, codice_a_barre4, quantita_venduta4);
+        END IF;
+
+        IF (codice_a_barre5 IS NOT NULL) THEN
+            INSERT INTO Vendita VALUES(id_scontrino_seq.currval, codice_a_barre5, quantita_venduta5);
+        END IF;
+
+    EXCEPTION
+        WHEN sede_exc THEN
+            RAISE_APPLICATION_ERROR('-20106', 'LA SEDE ' || sede_via || ', '|| sede_civico || ', '|| sede_cap || ' NON È ATTIVA');
+
+    END;
+
+--SOTTOSCRIZIONE UTENTE--
+CREATE OR REPLACE PROCEDURE sottoscrizione_utente (numero_persona   CHAR,  
+                                                   nome_abbonamento VARCHAR2,  
+                                                   via_sedeX         VARCHAR2,  
+                                                   civico_sedeX      VARCHAR2,  
+                                                   cap_sedeX         NUMBER,  
+                                                   codice_fiscale   CHAR := NULL,  
+                                                   data_di_nascita  VARCHAR2 := NULL,  
+                                                   nome             VARCHAR2 := NULL,  
+                                                   cognome          VARCHAR2 := NULL,  
+                                                   genere           CHAR := NULL,  
+                                                   via_persona      VARCHAR2 := NULL,  
+                                                   civico_persona   VARCHAR2 := NULL,  
+                                                   cap_persona      NUMBER := NULL,  
+                                                   telefono_persona CHAR := NULL)   
+    AS  
+      
+        sottoscrizione_exc EXCEPTION;  
+        sede_exc EXCEPTION;  
+
+        data_di_nascitaX DATE := TO_DATE ( data_di_nascita, 'DD-MM-YY' );  
+        eta_persona NUMBER := TO_NUMBER ( months_between(trunc(sysdate), data_di_nascitaX) / 12 );  
+
+        durata_abbonamentoX tipologia_abbonamento.durata_abbonamento%TYPE;  
+        check_sot NUMBER := 0;  
+        stato_sedeX Sede.stato_sede%type;  
+    BEGIN  
+
+        --controlliamo se la sede è attiva o meno--  
+        SELECT stato_sede INTO stato_sedeX FROM Sede   
+            WHERE via_sede = via_sedeX AND civico_sede = civico_sedeX AND cap_sede = cap_sedeX;  
+
+        IF (stato_sedeX = 'NON ATTIVO') THEN  
+            RAISE sede_exc;  
+        END IF;  
+
+
+        --controlliamo se il codice fiscale e la data di nascita sono null--  
+        --nel caso si vuole inserire una nuova persona--  
+        IF (codice_fiscale IS NOT NULL AND data_di_nascita IS NOT NULL) THEN  
+            --inseriamo la persona--  
+            INSERT INTO persona   
+                VALUES (  
+                    numero_persona,  
+                    nome,  
+                    cognome,  
+                    genere,  
+                    codice_fiscale,  
+                    data_di_nascitaX,  
+                    eta_persona,  
+                    via_persona,  
+                    civico_persona,  
+                    cap_persona,  
+                    telefono_persona );  
+            --inseriamo l'utente associato alla persona appena creata--  
+            INSERT INTO Utente(fk_persona) VALUES ( numero_persona );  
+        END IF;  
+
+        --tramite un contatore controlliamo se esiste già una sottoscrizione dell'utente allo specifico abbonamento--  
+        SELECT COUNT(id_sottoscrizione)  
+        INTO check_sot  
+        FROM sottoscrizione  
+        WHERE fk_utente = numero_persona AND fk_abbonamento_nome = nome_abbonamento;  
+
+        --se esiste avremo il contatore maggiore di 0 e mandiamo l'errore--  
+        IF ( check_sot > 0 ) THEN  
+            RAISE sottoscrizione_exc;  
+        ELSE  
+            --altrimenti ricaviamo la durata dell'abbonamento per i dati della sottoscrizione--  
+            SELECT durata_abbonamento INTO durata_abbonamentoX FROM tipologia_abbonamento   
+                WHERE nome_tipologia_abbonamento = nome_abbonamento;  
+
+            --inseriamo la sottoscrizione--  
+            INSERT INTO sottoscrizione (
+                fk_utente,  
+                fk_abbonamento_nome,  
+                fk_abbonamento_durata,  
+                fk_sede_via,  
+                fk_sede_civico,  
+                fk_sede_cap,  
+                data_fine_sottoscrizione)  
+            VALUES (   
+                numero_persona,  
+                nome_abbonamento,  
+                durata_abbonamentoX,  
+                via_sedeX,  
+                civico_sedeX,  
+                cap_sedeX,  
+                add_months(sysdate, durata_abbonamentoX));  
+
+        END IF;  
+
+    EXCEPTION  
+        WHEN sottoscrizione_exc THEN  
+            raise_application_error('-20102', 'L''UTENTE È GIÀ SOTTOSCRITTO A:  ' || nome_abbonamento);  
+
+        WHEN sede_exc THEN  
+            raise_application_error('-20105', 'LA SEDE ' || via_sedeX || ', '|| civico_sedeX || ', '|| cap_sedeX || ' NON È ATTIVA');  
+    END;
+
+--LICENZIAMENTO--
+CREATE OR REPLACE PROCEDURE Licenziamento_dipendente(numero_documento CHAR) AS  
+BEGIN  
+    UPDATE Dipendente SET data_di_licenziamento = SYSDATE WHERE Dipendente.fk_persona = numero_documento;  
+END;
+
+--ASSUNZIONE--
+CREATE OR REPLACE PROCEDURE assunzione(numero_persona    CHAR,
+                                       via_sedeX         VARCHAR2,
+                                       civico_sedeX      VARCHAR2,
+                                       cap_sedeX         NUMBER,
+                                       codice_fiscale    CHAR,
+                                       data_di_nascita   VARCHAR2,
+                                       codice_ibanX      CHAR,
+                                       mansioneX         VARCHAR2,
+                                       nome              VARCHAR2 := NULL,
+                                       cognome           VARCHAR2 := NULL,
+                                       genere            CHAR := NULL,
+                                       via_persona       VARCHAR2 := NULL,
+                                       civico_persona    VARCHAR2 := NULL,
+                                       cap_persona       NUMBER := NULL,
+                                       telefono          CHAR := NULL,
+                                       stipendioX        NUMBER := NULL,
+                                       titolo_di_studioX VARCHAR2 :=NULL)
+    AS
+        sede_exc EXCEPTION;
+
+        chk_dipendente NUMBER;
+        data_di_nascitaX DATE := TO_DATE ( data_di_nascita, 'DD-MM-YYYY' );
+
+        stato_sedeX Sede.stato_sede%type;
+        data_licenziamento DATE;
+    BEGIN
+        --controlliamo se la sede è attiva o meno--
+        SELECT stato_sede INTO stato_sedeX FROM Sede 
+            WHERE via_sede = via_sedeX AND civico_sede = civico_sedeX AND cap_sede = cap_sedeX;
+
+        IF (stato_sedeX = 'NON ATTIVO') THEN
+            RAISE sede_exc;
+        END IF;
+
+        SELECT COUNT(fk_persona) INTO chk_dipendente FROM Dipendente WHERE fk_persona = numero_persona;
+
+        IF (chk_dipendente = 1) THEN
+            IF(stipendioX IS NULL) THEN
+                UPDATE Dipendente SET fk_sede_via = via_sedeX, 
+                                      fk_sede_civico = civico_sedeX, 
+                                      fk_sede_cap = cap_sedeX, 
+                                      data_di_licenziamento = NULL,
+                                      stipendio_mensile = DEFAULT
+                WHERE fk_persona = numero_persona;
+            ELSE
+                UPDATE Dipendente SET fk_sede_via = via_sedeX, 
+                                      fk_sede_civico = civico_sedeX, 
+                                      fk_sede_cap = cap_sedeX, 
+                                      data_di_licenziamento = NULL,
+                                      stipendio_mensile = stipendioX
+                WHERE fk_persona = numero_persona;
+            END IF;
+        ELSE
+            --inseriamo la persona--
+            INSERT INTO persona (numero_documento_persona,
+                                 nome_persona,
+                                 cognome_persona,
+                                 genere_persona,
+                                 codice_fiscale_persona,
+                                 data_di_nascita,
+                                 via_persona,
+                                 civico_persona,
+                                 cap_persona,
+                                 telefono_persona)
+                VALUES (
+                    numero_persona,
+                    nome,
+                    cognome,
+                    genere,
+                    codice_fiscale,
+                    data_di_nascitaX,
+                    via_persona,
+                    civico_persona,
+                    cap_persona,
+                    telefono);
+
+            IF(stipendioX IS NULL) THEN
+                INSERT INTO Dipendente(fk_persona, 
+                       codice_iban, 
+                       mansione,  
+                       titolo_di_studio, 
+                       fk_sede_via, 
+                       fk_sede_civico, 
+                       fk_sede_cap)
+                VALUES(numero_persona, 
+                       codice_ibanX, 
+                       mansioneX, 
+                       titolo_di_studioX, 
+                       via_sedeX, 
+                       civico_sedeX, 
+                       cap_sedeX);
+            ELSE
+                INSERT INTO Dipendente(fk_persona, 
+                       codice_iban, 
+                       mansione, 
+                       stipendio_mensile, 
+                       titolo_di_studio, 
+                       fk_sede_via, 
+                       fk_sede_civico, 
+                       fk_sede_cap)
+                VALUES(numero_persona, 
+                       codice_ibanX, 
+                       mansioneX, 
+                       stipendioX, 
+                       titolo_di_studioX, 
+                       via_sedeX, 
+                       civico_sedeX, 
+                       cap_sedeX);
+            END IF;
+
+        END IF;
+    END;
+    
+--PAGAMENTO UTENZA--
+CREATE OR REPLACE PROCEDURE pagamento_utenze(via_sede VARCHAR2, 
+                                             civico_sede VARCHAR2, 
+                                             cap_sede NUMBER) 
+AS
+BEGIN
+    UPDATE Utenza SET pagamento_utenza = 'S' 
+        WHERE fk_sede_via = via_sede AND fk_sede_civico = civico_sede AND fk_sede_cap = cap_sede;
+END;
+
+--RINNOVO SOTTOSCRIZIONE--
+CREATE OR REPLACE PROCEDURE rinnovo_sottoscrizione(numero_utente CHAR, 
+                                                   nome_abbonamento VARCHAR2, 
+                                                   via_sede VARCHAR2 := NULL, 
+                                                   civico_sede VARCHAR2 := NULL, 
+                                                   cap_sede NUMBER := NULL) 
+AS 
+    pagamento_exc EXCEPTION; 
+    sede_exc EXCEPTION;
+    
+    sottoscrizione_pagata Sottoscrizione.ha_pagato%TYPE; 
+    stato_sedeX Sede.stato_sede%type;
+    BEGIN 
+        SELECT ha_pagato INTO sottoscrizione_pagata FROM Sottoscrizione 
+        WHERE fk_utente = numero_utente AND fk_abbonamento_nome = nome_abbonamento; 
+        
+        IF(sottoscrizione_pagata = 'S') THEN 
+            RAISE pagamento_exc; 
+        END IF; 
+        
+        IF(via_sede IS NULL AND civico_sede IS NULL AND cap_sede IS NULL) THEN 
+            UPDATE Sottoscrizione SET ha_pagato = 'S' 
+                WHERE fk_utente = numero_utente AND fk_abbonamento_nome = nome_abbonamento; 
+        ELSE 
+            SELECT stato_sede INTO stato_sedeX FROM Sede WHERE Sede.via_sede = via_sede AND
+                                      Sede.civico_sede = civico_sede AND Sede.cap_sede = cap_sede;
+            IF (stato_sedeX = 'NON ATTIVO') THEN
+                RAISE sede_exc;
+            END IF;
+            
+            UPDATE Sottoscrizione SET ha_pagato = 'S', fk_sede_via = via_sede, 
+                                      fk_sede_civico = civico_sede, fk_sede_cap = cap_sede 
+            WHERE fk_utente = numero_utente AND fk_abbonamento_nome = nome_abbonamento; 
+        END IF; 
+    
+    EXCEPTION 
+        WHEN pagamento_exc THEN 
+            RAISE_APPLICATION_ERROR('-20200', 'LA SOTTOSCRIZIONE ( ' || nome_abbonamento || ' ) DI ' || numero_utente || ' RISULTA PAGATA');     
+        WHEN sede_exc THEN 
+            RAISE_APPLICATION_ERROR('-20201', 'LA SEDE NON È ATTIVA');     
+END;
+
+--VERIFICA ENTRATA--
+CREATE OR REPLACE PROCEDURE verifica_entrata(numero_tessera_utente CHAR) AS         
+    CURSOR C IS 
+        SELECT ha_pagato AS pagamento_cur, data_fine_sottoscrizione AS scadenza_cur 
+        FROM Sottoscrizione JOIN UTENTE ON fk_utente = fk_persona 
+        WHERE fk_utente = numero_tessera_utente;
+        
+    info_utente C%rowtype;         
+    counter_sottoscrizioni NUMBER := 0;         
+    tot_sottoscrizioni NUMBER := 0;         
+
+BEGIN         
+    SELECT COUNT(id_sottoscrizione) INTO tot_sottoscrizioni FROM Sottoscrizione 
+        WHERE fk_utente = numero_tessera_utente;         
+    
+    FOR info_utente IN C LOOP              
+        IF(info_utente.pagamento_cur = 'N' OR info_utente.scadenza_cur <= SYSDATE) THEN         
+            counter_sottoscrizioni := counter_sottoscrizioni + 1;     		     
+        END IF;         
+    END LOOP;         
+    
+    IF(counter_sottoscrizioni < tot_sottoscrizioni) THEN         
+        dbms_output.put_line('L''utente può entrare'); 
+    ELSE         
+        dbms_output.put_line('L''utente non può entrare');         
+    END IF;         
+END;
+
+--PRENOTAZIONE PISCINA--
+CREATE OR REPLACE PROCEDURE prenotazione_piscina(numero_utente CHAR, 
+                                                 via_piscina VARCHAR2, 
+                                                 civico_piscina VARCHAR2, 
+                                                 cap_piscina NUMBER, 
+                                                 numero_piscina NUMBER, 
+                                                 data_prenotazione VARCHAR2) 
+AS
+    sede_exc EXCEPTION;
+    stato_sedeX Sede.stato_sede%TYPE;
+    
+    data_prenotazioneX TIMESTAMP := to_timestamp(data_prenotazione, 'DD-MM-YY HH24:MI');
+
+BEGIN
+    SELECT stato_sede INTO stato_sedeX FROM Sede 
+    WHERE via_sede = via_piscina AND civico_sede = civico_piscina AND cap_sede = cap_piscina;
+    
+    IF(stato_sedeX = 'NON ATTIVO') THEN
+        RAISE sede_exc;
+    END IF;
+    
+    INSERT INTO Prenotazione VALUES(data_prenotazioneX, numero_utente, 
+                                    numero_piscina, via_piscina, civico_piscina, 
+                                    cap_piscina, 20.00);
+
+EXCEPTION
+    WHEN sede_exc THEN 
+        RAISE_APPLICATION_ERROR('-20202', 'LA SEDE NON È ATTIVA');
+END;
+
+--REGISTRA TURNO--
+CREATE OR REPLACE
+PROCEDURE registra_turno(numero_dipendente VARCHAR2) 
+AS
+	sede_exc EXCEPTION;
+	licenziato_exc EXCEPTION;
+    
+	stato_sedeX Sede.stato_sede%TYPE;
+	ora_inizio_turnoX NUMBER := to_number(to_char(current_timestamp, 'HH24.MI'));
+    dip Dipendente%rowtype;
+    count_presenze_dipendente NUMBER;
+
+    
+	CURSOR C IS (select *
+                 from assegnazione_settimanale join tipologia_turno 
+                 on fk_tipologia_turno_nome = nome_tipologia_turno
+                 where fk_dipendente = numero_dipendente and data_assegnazione = to_date(sysdate, 'DD-MM-YY'));
+	
+
+	BEGIN
+        
+        SELECT * INTO dip FROM Dipendente WHERE fk_persona = numero_dipendente;
+        
+        IF (dip.data_di_licenziamento IS NOT NULL) THEN
+            RAISE licenziato_exc;
+        END IF;
+        
+		--controlliamo se la sede è attiva o meno--   
+        SELECT stato_sede INTO stato_sedeX FROM Sede    
+            WHERE via_sede = dip.fk_sede_via AND civico_sede = dip.fk_sede_civico AND cap_sede = dip.fk_sede_cap;   
+
+        IF (stato_sedeX = 'NON ATTIVO') THEN   
+            RAISE sede_exc;   
+        END IF;
+
+
+        FOR turno_dip IN C LOOP
+            SELECT count(fk_dipendente) INTO count_presenze_dipendente FROM Presenza_dipendente 
+                WHERE fk_dipendente = numero_dipendente 
+                AND trunc(data_ora_entrata)= to_date(sysdate, 'DD-MM-YY') 
+                AND UPPER(fk_tipologia_turno_nome) = UPPER(turno_dip.fk_tipologia_turno_nome) 
+                AND data_ora_uscita IS NULL AND fk_sede_via = dip.fk_sede_via 
+                AND fk_sede_civico = dip.fk_sede_civico AND fk_sede_cap = dip.fk_sede_cap;
+
+            IF(ora_inizio_turnoX BETWEEN turno_dip.ora_inizio_turno AND turno_dip.ora_fine_turno AND count_presenze_dipendente = 0) THEN
+                INSERT INTO Presenza_dipendente(data_ora_entrata, 
+                                                fk_dipendente, 
+                                                fk_sede_via, 
+                                                fk_sede_civico, 
+                                                fk_sede_cap,  
+                                                fk_tipologia_turno_nome) 
+                    VALUES (current_timestamp, 
+                            numero_dipendente, 
+                            dip.fk_sede_via,
+                            dip.fk_sede_civico, 
+                            dip.fk_sede_cap,  
+                            turno_dip.fk_tipologia_turno_nome); 
+            END IF;
+
+            IF(count_presenze_dipendente = 1) THEN
+                UPDATE Presenza_dipendente SET data_ora_uscita = current_timestamp 
+                    WHERE fk_dipendente = numero_dipendente 
+                    AND UPPER(fk_tipologia_turno_nome) = UPPER(turno_dip.fk_tipologia_turno_nome) 
+                    AND data_ora_uscita IS NULL;
+            END IF;
+        END LOOP;
+
+	EXCEPTION
+        WHEN sede_exc THEN   
+            RAISE_APPLICATION_ERROR('-20205', 'LA SEDE ' || dip.fk_sede_via || ', '|| dip.fk_sede_civico || ', '|| dip.fk_sede_cap || ' NON È ATTIVA');
+        WHEN licenziato_exc THEN   
+            RAISE_APPLICATION_ERROR('-20206', 'IL DIPENDENTE È STATO LICENZIATO!');
+
+END;

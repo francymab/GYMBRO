@@ -1,39 +1,368 @@
 -----CREATE TRIGGERS-----
 
-CREATE OR REPLACE TRIGGER check_date_scheda BEFORE
-    INSERT ON scheda_di_allenamento
-    FOR EACH ROW
+--CHECK DATA SCHEDA--
+CREATE OR REPLACE TRIGGER check_date_scheda     
+    BEFORE INSERT OR UPDATE OF data_fine_scheda ON scheda_di_allenamento     
+    FOR EACH ROW     
+DECLARE     
+    data_inizio_scheda_exc EXCEPTION;     
+    data_fine_scheda_exc EXCEPTION;     
+    data_inizio_maggiore_fine_exc EXCEPTION;     
+    data_scadenza_minima scheda_di_allenamento.data_fine_scheda%TYPE := :new.data_inizio_scheda + 7;     
+BEGIN  
+    IF ( :new.data_inizio_scheda > :new.data_fine_scheda ) THEN     
+        RAISE data_inizio_maggiore_fine_exc;     
+    END IF;     
+     
+    IF ( :new.data_inizio_scheda < trunc(sysdate) ) THEN     
+        RAISE data_inizio_scheda_exc;     
+    END IF;       
+   
+    IF ( :new.data_fine_scheda < data_scadenza_minima ) THEN     
+    	RAISE data_fine_scheda_exc;     
+    END IF;    
+   
+EXCEPTION     
+    WHEN data_inizio_scheda_exc THEN     
+        raise_application_error('-20002', '(SCHEDA_DI_ALLENAMENTO) ERRORE "data_inizio_scheda": '     
+                                          || TO_DATE(:new.data_inizio_scheda, 'DD/MM/YYYY')     
+                                          || ' < '     
+                                          || sysdate);     
+    WHEN data_fine_scheda_exc THEN     
+        raise_application_error('-20003', '(SCHEDA_DI_ALLENAMENTO) ERRORE "data_fine_scheda": '     
+                                          || TO_DATE(:new.data_fine_scheda, 'DD/MM/YYYY')     
+                                          || ' < '     
+                                          || TO_DATE(data_scadenza_minima, 'DD/MM/YYYY'));     
+    WHEN data_inizio_maggiore_fine_exc THEN     
+        raise_application_error('-20004', '(SCHEDA_DI_ALLENAMENTO) ERRORE "data_inizio_scheda" MAGGIORE "data_fine_scheda": '     
+                                          || TO_DATE(:new.data_inizio_scheda, 'DD/MM/YYYY')     
+                                          || ' > '     
+                                          || TO_DATE(:new.data_fine_scheda, 'DD/MM/YYYY'));     
+END;
+
+--CALCOLO E CONTROLLO ETA--
+CREATE OR REPLACE TRIGGER genera_eta_persona
+BEFORE INSERT ON Persona
+FOR EACH ROW
 DECLARE
-    data_inizio_scheda_exc EXCEPTION;
-    data_fine_scheda_exc EXCEPTION;
-    data_inizio_maggiore_fine_exc EXCEPTION;
-    data_scadenza_minima scheda_di_allenamento.data_fine_scheda%TYPE := :new.data_inizio_scheda + 7;
+    eta_massima NUMBER := 100;
+    eta_minima NUMBER := 6;
+    eta NUMBER;
+    
+    eta_exc EXCEPTION;
 BEGIN
-    IF ( :new.data_inizio_scheda > :new.data_fine_scheda ) THEN
-        RAISE data_inizio_maggiore_fine_exc;
+    eta := TO_NUMBER ( months_between(trunc(sysdate), :NEW.data_di_nascita) / 12 );
+    
+    IF (eta NOT BETWEEN eta_minima AND eta_massima) THEN
+        RAISE eta_exc;
+    END IF;
+    
+    :NEW.eta_persona := eta;
+    
+EXCEPTION
+    WHEN eta_exc THEN
+        RAISE_APPLICATION_ERROR('-20150', 'ETA NON CONSENTITA PER L''ISCRIZIONE ALLA PALESTRA');
+END;
+
+--CONTROLLO SUL DIPENDENTE--
+create or replace trigger genera_dipendente
+BEFORE INSERT ON Dipendente
+FOR EACH ROW
+DECLARE
+
+    eta_exc EXCEPTION;
+    tipo_dip_exc EXCEPTION;
+    tot_dip_exc EXCEPTION;
+
+    eta_dip NUMBER;
+    count_dip NUMBER :=0;
+BEGIN
+    SELECT eta_persona INTO eta_dip FROM Persona WHERE numero_documento_persona = :NEW.fk_persona;
+
+    IF (eta_dip < 18) THEN
+        RAISE eta_exc;
     END IF;
 
-    IF ( :new.data_inizio_scheda < trunc(sysdate) ) THEN
-        RAISE data_inizio_scheda_exc;
+    SELECT COUNT(mansione) INTO count_dip FROM Dipendente 
+        WHERE mansione = :NEW.mansione AND fk_sede_via = :NEW.fk_sede_via 
+            AND fk_sede_civico = :NEW.fk_sede_civico AND fk_sede_cap = :NEW.fk_sede_cap;
+
+    IF(UPPER(:NEW.mansione) = 'ISTRUTTORE' AND count_dip = 3) THEN
+        RAISE tipo_dip_exc;
+    ELSIF (UPPER(:NEW.mansione) = 'SEGRETARIA' AND count_dip = 2) THEN
+        RAISE tipo_dip_exc;
+    ELSIF (UPPER(:NEW.mansione) = 'RESPONSABILE' AND count_dip = 1) THEN
+        RAISE tipo_dip_exc;
     END IF;
 
-    IF ( :new.data_fine_scheda < data_scadenza_minima ) THEN
-        RAISE data_fine_scheda_exc;
+    SELECT COUNT(fk_persona) INTO count_dip FROM Dipendente 
+        WHERE fk_sede_via = :NEW.fk_sede_via AND fk_sede_civico = :NEW.fk_sede_civico 
+            AND fk_sede_cap = :NEW.fk_sede_cap;
+
+    IF(count_dip = 6) THEN
+        DELETE FROM Persona WHERE numero_documento_persona = :NEW.fk_persona;
+        RAISE tot_dip_exc;
+    END IF;
+
+EXCEPTION
+    WHEN eta_exc THEN
+        RAISE_APPLICATION_ERROR('-20151', 'ETA DEL DIPENDENTE MINORE DI 18 ');
+    WHEN tipo_dip_exc THEN
+        RAISE_APPLICATION_ERROR('-20152', 'CI SONO GIÀ ' || count_dip ||' '|| :NEW.mansione|| ' NELLA SEDE SELEZIONATA');
+    WHEN tot_dip_exc THEN
+        RAISE_APPLICATION_ERROR('-20153', 'CI SONO GIÀ 6 NELLA SEDE SELEZIONATA');
+
+END;
+
+--SEDE NON ATTIVA--
+CREATE OR REPLACE TRIGGER sede_non_attiva  
+BEFORE UPDATE OF stato_sede ON Sede
+FOR EACH ROW
+DECLARE
+    
+    utenze_exc EXCEPTION;
+
+    chk_utenze NUMBER := 0;
+
+BEGIN 
+    SELECT COUNT(numero_fattura) INTO chk_utenze FROM Utenza  WHERE fk_sede_via = :NEW.via_sede
+            AND fk_sede_civico = :NEW.civico_sede AND fk_sede_cap = :NEW.cap_sede AND pagamento_utenza = 'N';
+
+    IF (chk_utenze > 0) THEN
+        RAISE utenze_exc;
+    END IF;
+
+    IF(UPPER(:NEW.stato_sede) = 'NON ATTIVO') THEN 
+        UPDATE Dipendente SET data_di_licenziamento = sysdate WHERE fk_sede_via = :NEW.via_sede
+            AND fk_sede_civico = :NEW.civico_sede AND fk_sede_cap = :NEW.cap_sede; 
+    END IF; 
+
+    EXCEPTION
+        WHEN utenze_exc THEN
+            RAISE_APPLICATION_ERROR('-20155', 'ESISTONO ANCORA DELLE UTENZE DA PAGARE');
+END;
+
+--NUMERO TESSERA UTENTE--
+CREATE OR REPLACE TRIGGER numero_tessera_trigger BEFORE
+INSERT ON utente
+FOR EACH ROW
+BEGIN
+    :NEW.numero_tessera := numero_tessera_seq.NEXTVAL;
+END;
+
+--ID SOTTOSCRIZIONE UTENTE--
+CREATE OR REPLACE TRIGGER id_sottoscrizione_trigger BEFORE
+INSERT ON sottoscrizione
+FOR EACH ROW
+BEGIN
+    :NEW.id_sottoscrizione := id_sottoscrizione_seq.NEXTVAL;
+END;
+
+--ID LEZIONE CORSO--
+CREATE OR REPLACE TRIGGER id_lezione_trigger BEFORE
+INSERT ON lezione_corso
+FOR EACH ROW
+BEGIN
+    :NEW.id_lezione := id_lezione_seq.NEXTVAL;
+END;
+
+--ID SCONTRINO SCONTRINO--
+CREATE OR REPLACE TRIGGER id_scontrino_trigger BEFORE
+INSERT ON scontrino
+FOR EACH ROW
+BEGIN
+    :NEW.id_scontrino := id_scontrino_seq.NEXTVAL;
+END;
+
+--CHECK DATA UTENZA--
+CREATE OR REPLACE TRIGGER chk_data_utenza 
+BEFORE INSERT ON Utenza 
+FOR EACH ROW 
+DECLARE 
+    data_scadenza_exc EXCEPTION; 
+
+BEGIN 
+    IF(:NEW.data_scadenza <= SYSDATE) THEN 
+        RAISE data_scadenza_exc; 
+    END IF; 
+
+EXCEPTION 
+    WHEN data_scadenza_exc THEN 
+        RAISE_APPLICATION_ERROR('-20160', 'LA DATA SCADENZA ' || :NEW.data_scadenza || ' < ' || SYSDATE); 
+END;
+
+--MAX PRODOTTI VENDUTI--
+CREATE OR REPLACE TRIGGER max_prodotti_venduti     
+BEFORE INSERT ON VENDITA     
+FOR EACH ROW     
+DECLARE     
+
+    giacenza_exc EXCEPTION;
+
+    giacenzaX Prodotto.giacenza%type;
+    
+BEGIN  
+    SELECT giacenza INTO giacenzaX FROM Prodotto WHERE codice_a_barre = :NEW.fk_prodotto;
+    
+    IF (giacenzaX < :NEW.quantita_venduta) THEN
+        RAISE giacenza_exc;
+     END IF;
+   
+EXCEPTION     
+    WHEN giacenza_exc THEN 
+            RAISE_APPLICATION_ERROR('-20101', 'LA GIACENZA DEL PRODOTTO ' || :NEW.fk_prodotto || ' È MINORE DELLA QUANTITA CHE SI VUOL VENDERE, GIACENZA: ' || giacenzaX);
+END;
+
+--CONTROLLO DATA PRENOTAZIONE--
+CREATE OR REPLACE TRIGGER chk_data_prenotazione
+BEFORE INSERT ON Prenotazione 
+FOR EACH ROW
+DECLARE
+    date_exc EXCEPTION;
+BEGIN 
+    IF (:NEW.data_ora_prenotazione < CURRENT_TIMESTAMP) THEN
+        RAISE date_exc;
     END IF;
 EXCEPTION
-    WHEN data_inizio_scheda_exc THEN
-        raise_application_error('-20002', '(SCHEDA_DI_ALLENAMENTO) ERRORE "data_inizio_scheda": '
-                                          || TO_DATE(:new.data_inizio_scheda, 'YYYY-MM-DD')
-                                          || ' < '
-                                          || TO_DATE(sysdate, 'YYYY-MM-DD'));
-    WHEN data_fine_scheda_exc THEN
-        raise_application_error('-20003', '(SCHEDA_DI_ALLENAMENTO) ERRORE "data_fine_scheda": '
-                                          || TO_DATE(:new.data_fine_scheda, 'YYYY-MM-DD')
-                                          || ' < '
-                                          || TO_DATE(data_scadenza_minima, 'YYYY-MM-DD'));
-    WHEN data_inizio_maggiore_fine_exc THEN
-        raise_application_error('-20004', '(SCHEDA_DI_ALLENAMENTO) ERRORE "data_inizio_scheda" MAGGIORE "data_fine_scheda": '
-                                          || TO_DATE(:new.data_inizio_scheda, 'YYYY-MM-DD')
-                                          || ' > '
-                                          || TO_DATE(:new.data_fine_scheda, 'YYYY-MM-DD'));
+    WHEN date_exc THEN
+        RAISE_APPLICATION_ERROR('-20175', 'DATA ED ORA INIZIO MINORI DI: ' || CURRENT_TIMESTAMP);
+END;
+
+--CONTROLLO NUMERO LEZIONI GIORNALIERE--
+create or replace TRIGGER chk_numero_lezione_giornaliere
+BEFORE INSERT ON Lezione_corso 
+FOR EACH ROW
+DECLARE
+    lezioni_giornaliere_exc EXCEPTION;
+
+    numero_lezioni NUMBER := 0;
+BEGIN 
+
+    SELECT COUNT(id_lezione) INTO numero_lezioni
+        FROM Lezione_corso 
+        WHERE giorno_settimana_lezione = :NEW.giorno_settimana_lezione AND fk_sala_via = :NEW.fk_sala_via
+        AND fk_sala_cap = :NEW.fk_sala_cap AND fk_sala_civico = :NEW.fk_sala_civico;
+
+    IF (numero_lezioni >= 5) THEN
+        RAISE lezioni_giornaliere_exc;
+    END IF;
+EXCEPTION
+    WHEN lezioni_giornaliere_exc THEN
+        RAISE_APPLICATION_ERROR('-20176', 'CI SONO GIÀ 5 LEZIONI PER QESTO GIORNO');
+END;
+
+--CONTROLLO CAPIENZA MASSIMA PISCINA--
+CREATE OR REPLACE TRIGGER check_capienza_piscina         
+BEFORE INSERT ON Prenotazione        
+FOR EACH ROW         
+DECLARE         
+    capienza_exc EXCEPTION;    
+        
+    numero_persone NUMBER := 0;    
+    capienza_piscina NUMBER := 0;    
+        
+BEGIN      
+    SELECT COUNT(fk_utente) INTO numero_persone    
+        FROM Prenotazione WHERE (data_ora_prenotazione + INTERVAL '59' MINUTE) 
+            BETWEEN :NEW.data_ora_prenotazione AND (:NEW.data_ora_prenotazione + INTERVAL '1' HOUR)   
+            AND fk_piscina_numero = :NEW.fk_piscina_numero AND fk_piscina_via = :NEW.fk_piscina_via    
+            AND fk_piscina_cap = :NEW.fk_piscina_cap AND fk_piscina_civico = :NEW.fk_piscina_civico;    
+        
+    SELECT capienza INTO capienza_piscina FROM Piscina     
+        WHERE numero_piscina = :NEW.fk_piscina_numero AND fk_sede_via = :NEW.fk_piscina_via    
+        AND fk_sede_cap = :NEW.fk_piscina_cap AND fk_sede_civico = :NEW.fk_piscina_civico;    
+       
+    IF (numero_persone = capienza_piscina) THEN    
+        RAISE capienza_exc;    
+    END IF;    
+EXCEPTION         
+    WHEN capienza_exc THEN    
+        RAISE_APPLICATION_ERROR('-20180', 'È STATA RAGGIUNTA GIÀ LA CAPIENZA MASSIMA PER QUELLA PISCINA NELLA DATA E ORA: ' || :NEW.data_ora_prenotazione);    
+END; 
+
+--MASSIME ISCRIZIONI AD UN CORSO DI UNA SEDE--
+CREATE OR REPLACE TRIGGER chk_utenti_corso
+BEFORE INSERT ON Sottoscrizione 
+FOR EACH ROW
+DECLARE
+    utenti_corsoX NUMBER := 0;
+    max_utenti_exc EXCEPTION;
+
+    CURSOR C 
+    IS 
+    SELECT fk_corso AS nome_c FROM Compreso WHERE fk_abbonamento_nome = :NEW.fk_abbonamento_nome;
+BEGIN 
+    FOR rec IN C
+    LOOP
+        dbms_output.put_line(rec.nome_c);
+        select count(fk_utente) INTO utenti_corsoX from sottoscrizione join compreso ON sottoscrizione.fk_abbonamento_nome = compreso.fk_abbonamento_nome
+        where fk_corso = rec.nome_c AND fk_sede_via = :NEW.fk_sede_via
+        AND fk_sede_cap = :NEW.fk_sede_cap AND fk_sede_civico = :NEW.fk_sede_civico;
+
+        IF (utenti_corsoX = 75) THEN
+            RAISE max_utenti_exc;
+        END IF;
+    END LOOP;
+
+EXCEPTION
+    WHEN max_utenti_exc THEN
+        RAISE_APPLICATION_ERROR('-20180', 'NUMERO MASSIMO DI UTENTI ISCRITTI ');
+END;
+
+--PAGAMENTO DELLA SOTTOSCRIZIONE--
+CREATE OR REPLACE TRIGGER chk_sottoscrizione_pagata 
+BEFORE UPDATE OF ha_pagato ON Sottoscrizione 
+FOR EACH ROW 
+BEGIN 
+    :NEW.data_inizio_sottoscrizione := SYSDATE; 
+    :NEW.data_fine_sottoscrizione := add_months(SYSDATE, :NEW.fk_abbonamento_durata); 
+END;
+
+--CONTROLLO PRENOTAZIONE STESSO UTENTE--
+create or replace TRIGGER chk_utente_prenotato
+BEFORE INSERT ON PRENOTAZIONE 
+FOR EACH ROW
+DECLARE
+    prenotazione_exc EXCEPTION;
+
+    count_prenotazione NUMBER := 0;
+BEGIN 
+    SELECT COUNT(fk_utente) INTO count_prenotazione FROM Prenotazione 
+        WHERE fk_utente = :NEW.fk_utente AND
+        data_ora_prenotazione BETWEEN (:NEW.data_ora_prenotazione - INTERVAL '1' HOUR) AND :NEW.data_ora_prenotazione   
+            AND fk_piscina_numero = :NEW.fk_piscina_numero AND fk_piscina_via = :NEW.fk_piscina_via    
+            AND fk_piscina_cap = :NEW.fk_piscina_cap AND fk_piscina_civico = :NEW.fk_piscina_civico;
+
+        IF (count_prenotazione > 0) THEN
+            RAISE prenotazione_exc;
+        END IF;
+EXCEPTION
+    WHEN prenotazione_exc THEN
+        RAISE_APPLICATION_ERROR('-20185', 'L'' UTENTE HA GIÀ EFFETTUATO LA PRENOTAZIONE NELLA STESSA PISCINA NELL''ARCO DI 1H');
+END;
+
+--CHK PRESENZA--
+CREATE OR REPLACE
+TRIGGER chk_presenza         
+BEFORE UPDATE OF data_ora_uscita ON Presenza_dipendente       
+FOR EACH ROW         
+DECLARE
+    uscita_exc EXCEPTION;
+
+    ora_curr_timeX NUMBER := 0;
+    ora_fine_turnoX NUMBER := 0;
+
+
+BEGIN      
+
+    SELECT ora_fine_turno INTO ora_fine_turnoX FROM Tipologia_turno WHERE nome_tipologia_turno = :NEW.fk_tipologia_turno_nome;
+
+    ora_curr_timeX := to_number(to_char(current_timestamp, 'HH24.MI'));
+
+    IF(ora_curr_timeX < ora_fine_turnoX) THEN
+        RAISE uscita_exc;
+    END IF;
+EXCEPTION         
+    WHEN uscita_exc THEN   
+        RAISE_APPLICATION_ERROR('-20208', 'USCITA NON CONSENTITA');
 END;

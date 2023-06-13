@@ -42,13 +42,9 @@ CREATE TABLE Esercizio (
 -----TIPOLOGIA TURNO-----
 CREATE TABLE Tipologia_turno (   
     -- ATTRIBUTI -- 
-    nome_tipologia_turno   VARCHAR2(15),
-    giorno_settimana_turno CHAR(3) CHECK ( UPPER(giorno_settimana_turno) 
-                                           IN ( 'LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB' ) ) NOT NULL,
-    durata_turno           NUMBER(3, 0) CHECK ( durata_turno > 0 ) NOT NULL,   
-       
-    -- VINCOLI DI CHIAVE PRIMARIA --  
-    CONSTRAINT pk_tipologia_turno PRIMARY KEY ( nome_tipologia_turno, giorno_settimana_turno )
+    nome_tipologia_turno   VARCHAR2(15) PRIMARY KEY,
+    ora_inizio_turno	   NUMBER(4,2) NOT NULL,
+    ora_fine_turno	   NUMBER(4,2) NOT NULL
 );
 
 -----PRODOTTO-----
@@ -57,7 +53,7 @@ CREATE TABLE Prodotto (
     codice_a_barre          CHAR(13) PRIMARY KEY,
     nome_prodotto           VARCHAR2(50),
     prezzo_vendita_unitario NUMBER(7, 2) NOT NULL,
-    giacenza                NUMBER(4, 0) CHECK ( giacenza > 0 ) NOT NULL
+    giacenza                NUMBER(4, 0) NOT NULL
 );
 
 -----CORSO-----
@@ -87,7 +83,7 @@ CREATE TABLE Dipendente (
     mansione              VARCHAR(30) NOT NULL,
     stipendio_mensile     NUMBER(6, 2) DEFAULT 1000.00 CHECK ( stipendio_mensile BETWEEN 800.00 AND 5000.00 ),
     titolo_di_studio      VARCHAR2(40),
-    data_di_licenziamento DATE,
+    data_di_licenziamento DATE DEFAULT NULL,
     fk_sede_via           VARCHAR2(30),
     fk_sede_civico        VARCHAR2(5),
     fk_sede_cap           NUMBER(5, 0),   
@@ -141,20 +137,17 @@ CREATE TABLE Utenza (
 -----PRESENZA DIPENDENTE-----
 CREATE TABLE Presenza_dipendente (   
     -- ATTRIBUTI --   
-    data_presenza             DATE DEFAULT CURRENT_DATE,
-    orario_entrata            TIMESTAMP,
-    orario_uscita             TIMESTAMP,
+    data_ora_entrata            TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_ora_uscita             TIMESTAMP,
     fk_dipendente             CHAR(9),
     fk_sede_via               VARCHAR2(30) NOT NULL,
     fk_sede_civico            VARCHAR2(5) NOT NULL,
     fk_sede_cap               NUMBER(5, 0) NOT NULL,
     fk_tipologia_turno_nome   VARCHAR2(15) NOT NULL,
-    fk_tipologia_turno_giorno CHAR(3) NOT NULL,   
    
     -- VINCOLI DI CHIAVE PRIMARIA --   
-    CONSTRAINT pk_presenza_dipendente PRIMARY KEY ( data_presenza,
-                                                    orario_entrata,
-                                                    fk_dipendente ),   
+    CONSTRAINT pk_presenza_dipendente PRIMARY KEY (data_ora_entrata,
+                                                   fk_dipendente ),   
    
     -- VINCOLI DI CHIAVE ESTERNA --   
     CONSTRAINT fk_presenza_dipendente FOREIGN KEY ( fk_dipendente )
@@ -167,10 +160,8 @@ CREATE TABLE Presenza_dipendente (
                           civico_sede,
                           cap_sede ),  -- on delete default --   
 
-    CONSTRAINT fk_tipologia_turno_presenza FOREIGN KEY ( fk_tipologia_turno_nome,
-                                                         fk_tipologia_turno_giorno )
-        REFERENCES Tipologia_turno ( nome_tipologia_turno,
-                                     giorno_settimana_turno ) -- on delete default --   
+    CONSTRAINT fk_tipologia_turno_presenza FOREIGN KEY ( fk_tipologia_turno_nome)
+        REFERENCES Tipologia_turno ( nome_tipologia_turno ) -- on delete default --   
 );
 
 -----SCHEDA DI ALLENAMENTO-----
@@ -201,7 +192,7 @@ CREATE TABLE Scontrino(
     fk_sede_civico VARCHAR2(5) NOT NULL,  
     fk_sede_cap NUMBER(5,0) NOT NULL,  
     data_scontrino TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
-    prezzo_totale NUMBER(5,2) CHECK (prezzo_totale > 0),  
+    prezzo_totale NUMBER(7,2) CHECK (prezzo_totale > 0),  
       
     -- VINCOLI DI CHIAVE ESTERNA --   
     CONSTRAINT fk_sede_scontrino FOREIGN KEY(fk_sede_via, fk_sede_civico, fk_sede_cap)  
@@ -296,18 +287,18 @@ CREATE TABLE lezione_corso (
 -----SOTTOSCRIZIONE-----
 CREATE TABLE Sottoscrizione (  
     -- ATTRIBUTI --  
-    id_sottoscrizione         NUMBER(6, 0) PRIMARY KEY,
-    fk_utente                 CHAR(9) NOT NULL,
-    fk_abbonamento_nome       VARCHAR2(100) NOT NULL,
-    fk_abbonamento_durata     NUMBER(2, 0) NOT NULL,
-    fk_sede_via               VARCHAR2(30) NOT NULL,
-    fk_sede_civico            VARCHAR2(5) NOT NULL,
-    fk_sede_cap               NUMBER(5, 0) NOT NULL,
-    data_inizio_sottoscrzione DATE DEFAULT current_date NOT NULL,
-    data_fine_sottoscrizione  DATE,
-    ha_pagato                 CHAR(1) DEFAULT 'S' CHECK ( UPPER(ha_pagato) = 'S'
+    id_sottoscrizione          NUMBER(6, 0) PRIMARY KEY,
+    fk_utente                  CHAR(9) NOT NULL,
+    fk_abbonamento_nome        VARCHAR2(100) NOT NULL,
+    fk_abbonamento_durata      NUMBER(2, 0) NOT NULL,
+    fk_sede_via                VARCHAR2(30) NOT NULL,
+    fk_sede_civico             VARCHAR2(5) NOT NULL,
+    fk_sede_cap                NUMBER(5, 0) NOT NULL,
+    data_inizio_sottoscrizione DATE DEFAULT current_date NOT NULL,
+    data_fine_sottoscrizione   DATE,
+    ha_pagato                  CHAR(1) DEFAULT 'S' CHECK ( UPPER(ha_pagato) = 'S'
                                                         OR UPPER(ha_pagato) = 'N' ),
-    certificato_medico        CHAR(1) DEFAULT 'S' CHECK ( UPPER(certificato_medico) = 'S'
+    certificato_medico         CHAR(1) DEFAULT 'S' CHECK ( UPPER(certificato_medico) = 'S'
                                                         OR UPPER(certificato_medico) = 'N' ),  
   
     -- VINCOLI DI CHIAVE ESTERNA --  
@@ -333,22 +324,18 @@ CREATE TABLE Assegnazione_settimanale (
     data_assegnazione         DATE,
     fk_dipendente             CHAR(9),
     fk_tipologia_turno_nome   VARCHAR2(15),
-    fk_tipologia_turno_giorno CHAR(3), 
  
     -- VINCOLI DI CHIAVE PRIMARIA -- 
     CONSTRAINT pk_assegnazione_settimanale PRIMARY KEY ( data_assegnazione,
                                                          fk_dipendente,
-                                                         fk_tipologia_turno_nome,
-                                                         fk_tipologia_turno_giorno ), 
+                                                         fk_tipologia_turno_nome ), 
      
     -- VINCOLI DI CHIAVE ESTERNA -- 
     CONSTRAINT fk_dipendente_assegnazione FOREIGN KEY ( fk_dipendente )
         REFERENCES Dipendente ( fk_persona ), -- on delete default -- 
 
-    CONSTRAINT fk_turno_assegnazione FOREIGN KEY ( fk_tipologia_turno_nome,
-                                                   fk_tipologia_turno_giorno )
-        REFERENCES Tipologia_turno ( nome_tipologia_turno,
-                                     giorno_settimana_turno )
+    CONSTRAINT fk_turno_assegnazione FOREIGN KEY ( fk_tipologia_turno_nome )
+        REFERENCES Tipologia_turno ( nome_tipologia_turno )
 );
 
 -----CONTIENE-----
@@ -384,7 +371,7 @@ CREATE TABLE Vendita (
     -- ATTRIBUTI --  
     fk_scontrino     NUMBER(6, 0),
     fk_prodotto      CHAR(13),
-    quantita_venduta NUMBER(3, 0) CHECK ( quantita_venduta BETWEEN 1 AND 5 ) NOT NULL,  
+    quantita_venduta NUMBER(3, 0) CHECK ( quantita_venduta > 0) NOT NULL,  
   
     -- VINCOLI DI CHIAVE PRIMARIA --  
     CONSTRAINT pk_vendita PRIMARY KEY ( fk_scontrino,
@@ -401,19 +388,16 @@ CREATE TABLE Vendita (
 -----PRENOTAZIONE-----
 CREATE TABLE Prenotazione (  
     -- ATTRIBUTI --  
-    data_prenotazione   DATE,
-    orario_prenotazione TIMESTAMP,
+    data_ora_prenotazione   TIMESTAMP,
     fk_utente           CHAR(9),
     fk_piscina_numero   NUMBER(1,0),
     fk_piscina_via      VARCHAR2(30),
     fk_piscina_civico   VARCHAR2(5),
     fk_piscina_cap      NUMBER(5, 0),
-    numero_ore          NUMBER(1, 0) CHECK ( numero_ore BETWEEN 1 AND 6 ) NOT NULL,
     prezzo_prenotazione NUMBER(5, 2) CHECK ( prezzo_prenotazione > 0 ) NOT NULL,    
   
     -- VINCOLI DI CHIAVE PRIMARIA --  
-    CONSTRAINT pk_prenotazione PRIMARY KEY ( data_prenotazione,
-                                             orario_prenotazione,
+    CONSTRAINT pk_prenotazione PRIMARY KEY ( data_ora_prenotazione,
                                              fk_utente,
                                              fk_piscina_numero,
                                              fk_piscina_via,
@@ -438,16 +422,16 @@ CREATE TABLE Prenotazione (
 CREATE TABLE Compreso(  
     -- ATTRIBUTI --    
     fk_corso VARCHAR2(30),  
-    fk_tipologia_abbonamento_nome VARCHAR2(100),  
-    fk_tipologia_abbonamento_durata NUMBER(2,0),  
+    fk_abbonamento_nome VARCHAR2(100),  
+    fk_abbonamento_durata NUMBER(2,0),  
     	  
     -- VINCOLI DI CHIAVE PRIMARIA --  
-    CONSTRAINT pk_compreso PRIMARY KEY(fk_corso, fk_tipologia_abbonamento_nome, fk_tipologia_abbonamento_durata),  
+    CONSTRAINT pk_compreso PRIMARY KEY(fk_corso, fk_abbonamento_nome, fk_abbonamento_durata),  
       
     -- VINCOLI DI CHIAVE ESTERNA --  
     CONSTRAINT fk_corso_compreso FOREIGN KEY(fk_corso)   
     	REFERENCES Corso(nome_corso) ON DELETE CASCADE,  
       
-    CONSTRAINT fk_tipologia_abbonamento_compreso FOREIGN KEY(fk_tipologia_abbonamento_nome, fk_tipologia_abbonamento_durata)  
+    CONSTRAINT fk_tipologia_abbonamento_compreso FOREIGN KEY(fk_abbonamento_nome, fk_abbonamento_durata)  
     	REFERENCES Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento) ON DELETE CASCADE  
 );
