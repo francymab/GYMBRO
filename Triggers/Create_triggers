@@ -340,3 +340,44 @@ EXCEPTION
     WHEN prenotazione_exc THEN
         RAISE_APPLICATION_ERROR('-20185', 'L'' UTENTE HA GIÀ EFFETTUATO LA PRENOTAZIONE NELLA STESSA PISCINA NELL''ARCO DI 1H');
 END;
+
+--CHK PRESENZA--
+create or replace TRIGGER chk_presenza         
+BEFORE INSERT OR UPDATE OF data_ora_uscita ON Presenza_dipendente       
+FOR EACH ROW         
+DECLARE
+    entrata_exc EXCEPTION;
+    uscita_exc EXCEPTION;
+
+    n_entrate NUMBER := 0;
+    durata NUMBER := 0;
+    data_entrata Presenza_dipendente.data_ora_entrata%type;
+
+
+
+BEGIN      
+    IF INSERTING THEN
+        SELECT COUNT(fk_dipendente) INTO n_entrate FROM Presenza_dipendente WHERE fk_dipendente = :NEW.fk_dipendente AND data_ora_uscita IS NULL;
+
+        IF (n_entrate > 0) THEN
+            RAISE entrata_exc;
+        END IF;
+    END IF;
+
+    IF UPDATING THEN
+        select durata_turno, data_ora_entrata INTO durata, data_entrata from Tipologia_turno join Presenza_dipendente
+        on fk_tipologia_turno_nome = nome_tipologia_turno AND fk_tipologia_turno_giorno = giorno_settimana_turno
+            WHERE nome_tipologia_turno = :NEW.fk_tipologia_turno_nome 
+                AND giorno_settimana_turno = :NEW.fk_tipologia_turno_giorno
+                AND fk_dipendente = :NEW.fk_dipendente;
+
+        IF (CURRENT_TIMESTAMP < (data_entrata + to_number(durata)/24)) THEN 
+            RAISE uscita_exc;
+        END IF;
+    END IF;
+EXCEPTION         
+    WHEN entrata_exc THEN   
+        RAISE_APPLICATION_ERROR('-20207', 'GIA ESISTE UNA PRESENZA APERTA IN UN''ALTRA SEDE');
+    WHEN uscita_exc THEN   
+        RAISE_APPLICATION_ERROR('-20208', 'USCITA NON CONSENTITA, ORE DI LAVORO MINORI DELLA DURATA TURNO');
+END;
