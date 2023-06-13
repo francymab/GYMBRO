@@ -42,13 +42,9 @@ CREATE TABLE Esercizio (
 -----TIPOLOGIA TURNO-----
 CREATE TABLE Tipologia_turno (   
     -- ATTRIBUTI -- 
-    nome_tipologia_turno   VARCHAR2(15),
-    giorno_settimana_turno CHAR(3) CHECK ( UPPER(giorno_settimana_turno) 
-                                           IN ( 'LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB' ) ) NOT NULL,
-    durata_turno           NUMBER(3, 0) CHECK ( durata_turno > 0 ) NOT NULL,   
-       
-    -- VINCOLI DI CHIAVE PRIMARIA --  
-    CONSTRAINT pk_tipologia_turno PRIMARY KEY ( nome_tipologia_turno, giorno_settimana_turno )
+    nome_tipologia_turno   VARCHAR2(15) PRIMARY KEY,
+    ora_inizio_turno	   NUMBER(4,2) NOT NULL,
+    ora_fine_turno	   NUMBER(4,2) NOT NULL
 );
 
 -----PRODOTTO-----
@@ -148,7 +144,6 @@ CREATE TABLE Presenza_dipendente (
     fk_sede_civico            VARCHAR2(5) NOT NULL,
     fk_sede_cap               NUMBER(5, 0) NOT NULL,
     fk_tipologia_turno_nome   VARCHAR2(15) NOT NULL,
-    fk_tipologia_turno_giorno CHAR(3) NOT NULL,   
    
     -- VINCOLI DI CHIAVE PRIMARIA --   
     CONSTRAINT pk_presenza_dipendente PRIMARY KEY (data_ora_entrata,
@@ -165,10 +160,8 @@ CREATE TABLE Presenza_dipendente (
                           civico_sede,
                           cap_sede ),  -- on delete default --   
 
-    CONSTRAINT fk_tipologia_turno_presenza FOREIGN KEY ( fk_tipologia_turno_nome,
-                                                         fk_tipologia_turno_giorno )
-        REFERENCES Tipologia_turno ( nome_tipologia_turno,
-                                     giorno_settimana_turno ) -- on delete default --   
+    CONSTRAINT fk_tipologia_turno_presenza FOREIGN KEY ( fk_tipologia_turno_nome)
+        REFERENCES Tipologia_turno ( nome_tipologia_turno ) -- on delete default --   
 );
 
 -----SCHEDA DI ALLENAMENTO-----
@@ -331,22 +324,18 @@ CREATE TABLE Assegnazione_settimanale (
     data_assegnazione         DATE,
     fk_dipendente             CHAR(9),
     fk_tipologia_turno_nome   VARCHAR2(15),
-    fk_tipologia_turno_giorno CHAR(3), 
  
     -- VINCOLI DI CHIAVE PRIMARIA -- 
     CONSTRAINT pk_assegnazione_settimanale PRIMARY KEY ( data_assegnazione,
                                                          fk_dipendente,
-                                                         fk_tipologia_turno_nome,
-                                                         fk_tipologia_turno_giorno ), 
+                                                         fk_tipologia_turno_nome ), 
      
     -- VINCOLI DI CHIAVE ESTERNA -- 
     CONSTRAINT fk_dipendente_assegnazione FOREIGN KEY ( fk_dipendente )
         REFERENCES Dipendente ( fk_persona ), -- on delete default -- 
 
-    CONSTRAINT fk_turno_assegnazione FOREIGN KEY ( fk_tipologia_turno_nome,
-                                                   fk_tipologia_turno_giorno )
-        REFERENCES Tipologia_turno ( nome_tipologia_turno,
-                                     giorno_settimana_turno )
+    CONSTRAINT fk_turno_assegnazione FOREIGN KEY ( fk_tipologia_turno_nome )
+        REFERENCES Tipologia_turno ( nome_tipologia_turno )
 );
 
 -----CONTIENE-----
