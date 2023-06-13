@@ -141,9 +141,8 @@ CREATE TABLE Utenza (
 -----PRESENZA DIPENDENTE-----
 CREATE TABLE Presenza_dipendente (   
     -- ATTRIBUTI --   
-    data_presenza             DATE DEFAULT CURRENT_DATE,
-    orario_entrata            TIMESTAMP,
-    orario_uscita             TIMESTAMP,
+    data_ora_entrata            TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_ora_uscita             TIMESTAMP,
     fk_dipendente             CHAR(9),
     fk_sede_via               VARCHAR2(30) NOT NULL,
     fk_sede_civico            VARCHAR2(5) NOT NULL,
@@ -152,9 +151,8 @@ CREATE TABLE Presenza_dipendente (
     fk_tipologia_turno_giorno CHAR(3) NOT NULL,   
    
     -- VINCOLI DI CHIAVE PRIMARIA --   
-    CONSTRAINT pk_presenza_dipendente PRIMARY KEY ( data_presenza,
-                                                    orario_entrata,
-                                                    fk_dipendente ),   
+    CONSTRAINT pk_presenza_dipendente PRIMARY KEY (data_ora_entrata,
+                                                   fk_dipendente ),   
    
     -- VINCOLI DI CHIAVE ESTERNA --   
     CONSTRAINT fk_presenza_dipendente FOREIGN KEY ( fk_dipendente )
