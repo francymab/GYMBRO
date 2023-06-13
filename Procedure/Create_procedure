@@ -118,8 +118,8 @@ CREATE OR REPLACE PROCEDURE compila_scheda( data_inizio_scheda VARCHAR2,
     AS
         mansione_dip dipendente.mansione%type;
         abbonamento_sala_utente compreso%rowtype;
-        data_inizio_schedaX DATE := TO_DATE ( data_inizio_scheda, 'DD/MM/YYYY' );
-        data_fine_schedaX DATE := TO_DATE ( data_fine_scheda, 'DD/MM/YYYY' );
+        data_inizio_schedaX DATE := TO_DATE ( data_inizio_scheda, 'DD-MM-YY' );
+        data_fine_schedaX DATE := TO_DATE ( data_fine_scheda, 'DD-MM-YY' );
 
 
         mansione_exc EXCEPTION;
@@ -327,7 +327,7 @@ CREATE OR REPLACE PROCEDURE sottoscrizione_utente (numero_persona   CHAR,
         sottoscrizione_exc EXCEPTION;  
         sede_exc EXCEPTION;  
 
-        data_di_nascitaX DATE := TO_DATE ( data_di_nascita, 'DD/MM/YYYY' );  
+        data_di_nascitaX DATE := TO_DATE ( data_di_nascita, 'DD-MM-YY' );  
         eta_persona NUMBER := TO_NUMBER ( months_between(trunc(sysdate), data_di_nascitaX) / 12 );  
 
         durata_abbonamentoX tipologia_abbonamento.durata_abbonamento%TYPE;  
@@ -435,7 +435,7 @@ CREATE OR REPLACE PROCEDURE assunzione(numero_persona    CHAR,
         sede_exc EXCEPTION;
 
         chk_dipendente NUMBER;
-        data_di_nascitaX DATE := TO_DATE ( data_di_nascita, 'DD/MM/YYYY' );
+        data_di_nascitaX DATE := TO_DATE ( data_di_nascita, 'DD-MM-YYYY' );
 
         stato_sedeX Sede.stato_sede%type;
         data_licenziamento DATE;
@@ -618,7 +618,7 @@ AS
     sede_exc EXCEPTION;
     stato_sedeX Sede.stato_sede%TYPE;
     
-    data_prenotazioneX TIMESTAMP := to_timestamp(data_prenotazione, 'DD/MM/YYYY HH24:MI');
+    data_prenotazioneX TIMESTAMP := to_timestamp(data_prenotazione, 'DD-MM-YY HH24:MI');
 
 BEGIN
     SELECT stato_sede INTO stato_sedeX FROM Sede 
