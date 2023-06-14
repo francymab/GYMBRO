@@ -1,4 +1,4 @@
-CREATE OR REPLACE TRIGGER TRIGGER check_capienza_piscina           
+CREATE OR REPLACE TRIGGER check_capienza_piscina           
 BEFORE INSERT ON Prenotazione          
 FOR EACH ROW           
 DECLARE           
