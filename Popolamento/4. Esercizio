@@ -1,0 +1,1 @@
+INSERT INTO Esercizio(nome_esercizio, nome_gruppo_muscolare) VALUES('leg exstantion', 'gambe');

@@ -1,0 +1,1 @@
+INSERT INTO Lezione_corso(fk_sala_codice, fk_sala_via, fk_sala_civico, fk_sala_cap, fk_corso, fk_dipendente, giorno_settimana_lezione, ora_inizio, ora_fine) VALUES('A1', 'Via salvator rosa', '150', 80136, 30, 'pump', 'CA78525DV', 'LUN', 9.00, 10.00);

@@ -294,7 +294,6 @@ DECLARE
 BEGIN 
     FOR rec IN C
     LOOP
-        dbms_output.put_line(rec.nome_c);
         select count(fk_utente) INTO utenti_corsoX from sottoscrizione join compreso ON sottoscrizione.fk_abbonamento_nome = compreso.fk_abbonamento_nome
         where fk_corso = rec.nome_c AND fk_sede_via = :NEW.fk_sede_via
         AND fk_sede_cap = :NEW.fk_sede_cap AND fk_sede_civico = :NEW.fk_sede_civico;

@@ -1,0 +1,1 @@
+INSERT INTO Tipologia_turno(nome_tipologia_turno, ora_inizio_turno, ora_fine_turno) VALUES('mattutino', 6.00, 10.00);

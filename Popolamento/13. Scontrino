@@ -1,0 +1,1 @@
+INSERT INTO Scontrino(fk_sede_via, fk_sede_civico, fk_sede_cap, prezzo_totale) VALUES ('Via salvator rosa', '150', 80136, 20.30); 

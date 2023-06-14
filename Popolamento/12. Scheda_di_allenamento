@@ -1,0 +1,1 @@
+INSERT INTO Scheda_di_allenamento(data_inizio_scheda, fk_utente, fk_dipendente, data_fine_scheda) VALUES (TO_DATE('26-06-23', 'DD-MM-YY'), 'CA78534DV', 'CA78525DV', TO_DATE('26-07-23', 'DD-MM-YY')); 

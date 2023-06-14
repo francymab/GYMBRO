@@ -1,0 +1,1 @@
+INSERT INTO Contiene(numero_serie, fk_scheda_data, fk_scheda_utente, fk_esercizio, peso, numero_ripetizioni, secondi_di_recupero) VALUES(1, TO_DATE('26-06-23', 'DD-MM-YY'), 'leg exstantion', 10, 3, 60);

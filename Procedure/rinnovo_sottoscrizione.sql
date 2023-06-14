@@ -29,7 +29,7 @@ AS
         -- nella sede da cui è stata inserita la prima volta. Per cui, in questo caso, verrà rinnovata la sottoscrizione, senza aggiornare
         -- i dati reletavi a dove è avvenuto il rinnovo --
         IF(via_sede IS NULL AND civico_sede IS NULL AND cap_sede IS NULL) THEN 
-            UPDATE Sottoscrizione SET ha_pagato = 'S' 
+            UPDATE Sottoscrizione SET ha_pagato = 'S', certificato_medico = 'S' 
                 WHERE fk_utente = numero_utente AND fk_abbonamento_nome = nome_abbonamento; 
         ELSE 
             -- Controlliamo se la sede è nello stato "ATTIVO" o "NON ATTIVO" --
@@ -41,7 +41,7 @@ AS
 
 	    -- Dopo aver controllato che la sede è attiva, il rinnovo verrà effettuato tenendo conto della nuova sede --
             -- da cui è avvenuta la richiesta --
-            UPDATE Sottoscrizione SET ha_pagato = 'S', fk_sede_via = via_sede, 
+            UPDATE Sottoscrizione SET ha_pagato = 'S', fk_sede_via = via_sede, certificato_medico = 'S',
                                       fk_sede_civico = civico_sede, fk_sede_cap = cap_sede 
             WHERE fk_utente = numero_utente AND fk_abbonamento_nome = nome_abbonamento; 
         END IF; 

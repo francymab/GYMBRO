@@ -1,21 +1,26 @@
 --VERIFICA ENTRATA--
 CREATE OR REPLACE PROCEDURE verifica_entrata(numero_tessera_utente CHAR) AS
     -- CURSORE --
-    -- Questo cursore seleziona tutti i pagamenti effettuati, e le relative scadenze, di ogni sottoscrizione di uno specifico utente dato il numero tessera -- 
+    -- Questo cursore seleziona tutti i pagamenti effettuati, e le relative scadenze, --
+    -- di ogni sottoscrizione di uno specifico utente dato il numero tessera -- 
     CURSOR C IS 
         SELECT ha_pagato AS pagamento_cur, data_fine_sottoscrizione AS scadenza_cur 
         FROM Sottoscrizione JOIN UTENTE ON fk_utente = fk_persona 
-        WHERE fk_utente = numero_tessera_utente;
+        WHERE numero_tessera = numero_tessera_utente;
 
     -- VARIABILI
     info_utente C%rowtype;         
     counter_sottoscrizioni_scadute NUMBER := 0;         
-    tot_sottoscrizioni NUMBER := 0;         
+    tot_sottoscrizioni NUMBER := 0;
+    numero_documento Utente.fk_persona%type;         
 
 BEGIN
+    -- Ricaviamo il numero documento della persona per poter controllare successivamente le sue sottoscrizioni --
+    SELECT fk_persona INTO numero_documento FROM Utente WHERE numero_tessera = numero_tessera_utente;
+    
     -- Contiamo quante sono tutte le sottoscrizioni dell'utente --
     SELECT COUNT(id_sottoscrizione) INTO tot_sottoscrizioni FROM Sottoscrizione 
-        WHERE fk_utente = numero_tessera_utente;         
+        WHERE fk_utente = numero_documento;         
 
     -- Per ogni sottoscrizione contenuta nel cursore, effettuiamo un controllo sulla sottoscrizione --
     -- Se la sottoscrizione non fosse stata pagata o risultasse scaduta, allora aumentiamo un counter --
