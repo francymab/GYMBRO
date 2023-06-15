@@ -1,1 +1,16 @@
 INSERT INTO Sede(via_sede, civico_sede, cap_sede, metri_quadri_sede, telefono_sede) VALUES('Via salvator rosa', '150', 80136, 150, '0815485478');
+INSERT INTO Sede(via_sede, civico_sede, cap_sede, metri_quadri_sede, telefono_sede) VALUES('Via Mar Rosso', '5', 24123, 150, '0815485468');
+INSERT INTO Sede(via_sede, civico_sede, cap_sede, metri_quadri_sede, telefono_sede) VALUES('Via Giuseppe Verdi', '1', 80121, 140, '0813454713');
+INSERT INTO Sede(via_sede, civico_sede, cap_sede, metri_quadri_sede, telefono_sede) VALUES('Piazza Garibaldi', '33', 80136, 110, '0816434373');
+INSERT INTO Sede(via_sede, civico_sede, cap_sede, metri_quadri_sede, telefono_sede) VALUES('Viale Manzoni', '53', 80121, 155, '0815413578');
+INSERT INTO Sede(via_sede, civico_sede, cap_sede, metri_quadri_sede, telefono_sede) VALUES('Via Corso Europa', '17', 80016, 150, '0815565423');
+INSERT INTO Sede(via_sede, civico_sede, cap_sede, metri_quadri_sede, telefono_sede) VALUES('Via Napoli', '3', 24126, 98, '0815975008');
+INSERT INTO Sede(via_sede, civico_sede, cap_sede, metri_quadri_sede, telefono_sede) VALUES('Via Dante', '7', 61121, 90, '0810005478');
+INSERT INTO Sede(via_sede, civico_sede, cap_sede, metri_quadri_sede, telefono_sede) VALUES('Viale delle industrie', '22', 80142, 170, '0815320478');
+INSERT INTO Sede(via_sede, civico_sede, cap_sede, metri_quadri_sede, telefono_sede) VALUES('Via Cesare', '38', 44126, 79, '0815497023');
+INSERT INTO Sede(via_sede, civico_sede, cap_sede, metri_quadri_sede, telefono_sede) VALUES('Via Rosa', '4', 24122, 34, '0810052153');
+INSERT INTO Sede(via_sede, civico_sede, cap_sede, metri_quadri_sede, telefono_sede) VALUES('Via Verdi', '23', 24126, 98, '0815834097');
+INSERT INTO Sede(via_sede, civico_sede, cap_sede, metri_quadri_sede, telefono_sede) VALUES('Via Massimo', '76', 61126, 90, '0810067315');
+INSERT INTO Sede(via_sede, civico_sede, cap_sede, metri_quadri_sede, telefono_sede) VALUES('Viale Vittoria', '1', 41126, 170, '0893420478');
+INSERT INTO Sede(via_sede, civico_sede, cap_sede, metri_quadri_sede, telefono_sede) VALUES('Piazza di Spagna', 'A3', 29121, 79, '0856842023');
+INSERT INTO Sede(via_sede, civico_sede, cap_sede, metri_quadri_sede, telefono_sede) VALUES('Piazza Verdi', '50', 29132, 34, '0810974023');

@@ -1,1 +1,15 @@
-INSERT INTO Prodotto(codice_a_barre, nome_prodotto, prezzo_vendita_unitario, giacenza) VALUES('1598657892456', 'baretta energetica', 2.5, 250);
+INSERT INTO Prodotto(codice_a_barre, nome_prodotto, prezzo_vendita_unitario, giacenza) VALUES('1553257892411', 'Acqua naturale Vera', 0.9, 555);
+INSERT INTO Prodotto(codice_a_barre, nome_prodotto, prezzo_vendita_unitario, giacenza) VALUES('1594231692412', 'Acqua frizzante Ferrarelle', 0.9, 550);
+INSERT INTO Prodotto(codice_a_barre, nome_prodotto, prezzo_vendita_unitario, giacenza) VALUES('1598257892413', 'Monster', 2.59, 150);
+INSERT INTO Prodotto(codice_a_barre, nome_prodotto, prezzo_vendita_unitario, giacenza) VALUES('3141243492414', 'Tè verde', 1.5, 120);
+INSERT INTO Prodotto(codice_a_barre, nome_prodotto, prezzo_vendita_unitario, giacenza) VALUES('1598657522415', 'Energaid', 2.0, 60);
+INSERT INTO Prodotto(codice_a_barre, nome_prodotto, prezzo_vendita_unitario, giacenza) VALUES('8565387952416', 'Gatoraid', 2.0, 70);
+INSERT INTO Prodotto(codice_a_barre, nome_prodotto, prezzo_vendita_unitario, giacenza) VALUES('1594257892417', 'Barretta energetica', 3.0, 25);
+INSERT INTO Prodotto(codice_a_barre, nome_prodotto, prezzo_vendita_unitario, giacenza) VALUES('5252547525418', 'Barretta proteica', 3.5, 30);
+INSERT INTO Prodotto(codice_a_barre, nome_prodotto, prezzo_vendita_unitario, giacenza) VALUES('1598648972419', 'Acqua naturale panna', 1.5, 10);
+INSERT INTO Prodotto(codice_a_barre, nome_prodotto, prezzo_vendita_unitario, giacenza) VALUES('1598645826420', 'TUC', 0.6, 250);
+INSERT INTO Prodotto(codice_a_barre, nome_prodotto, prezzo_vendita_unitario, giacenza) VALUES('5936578924214', 'Crackers', 0.5, 300);
+INSERT INTO Prodotto(codice_a_barre, nome_prodotto, prezzo_vendita_unitario, giacenza) VALUES('3132157892422', 'Croccantelle prosciutto crudo', 0.7, 550);
+INSERT INTO Prodotto(codice_a_barre, nome_prodotto, prezzo_vendita_unitario, giacenza) VALUES('7578657892423', 'Croccantelle bacon', 0.7, 550);
+INSERT INTO Prodotto(codice_a_barre, nome_prodotto, prezzo_vendita_unitario, giacenza) VALUES('7744765692424', 'Croccantelle pomodoro', 0.7, 550);
+INSERT INTO Prodotto(codice_a_barre, nome_prodotto, prezzo_vendita_unitario, giacenza) VALUES('7896553546425', 'Budino proteico', 3.29, 47);

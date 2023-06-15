@@ -1,1 +1,15 @@
-INSERT INTO Corso(nome_corso, obiettivo) VALUES('pump', 'definizione');
+INSERT INTO Corso(nome_corso, obiettivo) VALUES('Sala', 'Allenamento');
+INSERT INTO Corso(nome_corso, obiettivo) VALUES('Pump', 'Definizione');
+INSERT INTO Corso(nome_corso, obiettivo) VALUES('Total body', 'Massa');
+INSERT INTO Corso(nome_corso, obiettivo) VALUES('Crossfit', 'Rafforzamento');
+INSERT INTO Corso(nome_corso, obiettivo) VALUES('Yoga', 'Armonizzazione corpo');
+INSERT INTO Corso(nome_corso, obiettivo) VALUES('GAG', 'Glutei e gambe');
+INSERT INTO Corso(nome_corso, obiettivo) VALUES('Zumba', 'Divertimento');
+INSERT INTO Corso(nome_corso, obiettivo) VALUES('TRX', 'Tonificazione corpo');
+INSERT INTO Corso(nome_corso, obiettivo) VALUES('Kick boxing', 'Difesa personale');
+INSERT INTO Corso(nome_corso, obiettivo) VALUES('Step', 'Forma fisica');
+INSERT INTO Corso(nome_corso, obiettivo) VALUES('Nuoto', 'Definizione');
+INSERT INTO Corso(nome_corso, obiettivo) VALUES('Karate', 'Difesa personale');
+INSERT INTO Corso(nome_corso, obiettivo) VALUES('Pilates', 'Zona inferiore');
+INSERT INTO Corso(nome_corso, obiettivo) VALUES('Aerobica', 'Metabolismo');
+INSERT INTO Corso(nome_corso, obiettivo) VALUES('Spinning', 'Preparazione fisica');

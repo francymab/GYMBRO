@@ -346,7 +346,7 @@ CREATE TABLE Contiene (
     fk_scheda_utente    CHAR(9),
     fk_esercizio        VARCHAR2(35),
     peso                NUMBER(3, 0) CHECK ( peso >= 0 ),
-    numero_ripetizioni  NUMBER(3, 0) CHECK ( numero_ripetizioni > 0 ),
+    numero_ripetizioni  NUMBER(3, 0) CHECK ( numero_ripetizioni >= 0 ),
     secondi_di_recupero NUMBER(3, 0) CHECK ( secondi_di_recupero >= 0 ) NOT NULL, 
  
     -- VINCOLI DI CHIAVE PRIMARIA -- 
