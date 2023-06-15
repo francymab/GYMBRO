@@ -1,1 +1,0 @@
-INSERT INTO Dipendente(fk_persona, codice_iban, mansione, stipendio_mensile, titolo_di_studio, fk_sede_via, fk_sede_civico, fk_sede_cap) VALUES('CA78525DV', 'IT1254789658745896284785485', 'Istruttore', 900, 'Scienze Motorie', 'Via salvator rosa', '150', 80136);

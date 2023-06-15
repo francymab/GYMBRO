@@ -1,1 +1,0 @@
-INSERT INTO Prodotto(codice_a_barre, nome_prodotto, prezzo_vendita_unitario, giacenza) VALUES('1598657892456', 'baretta energetica', 2.5, 250);

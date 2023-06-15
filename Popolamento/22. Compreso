@@ -1,2 +1,0 @@
-INSERT INTO Compreso(fk_corso, fk_abbonamento_nome, fk_abbonamento_durata) VALUES('pump', 'from hero to zero', 1);
-

@@ -1,0 +1,10 @@
+INSERT INTO Tipologia_turno(nome_tipologia_turno, ora_inizio_turno, ora_fine_turno) VALUES('Mattutino', 6.00, 12.00);
+INSERT INTO Tipologia_turno(nome_tipologia_turno, ora_inizio_turno, ora_fine_turno) VALUES('Pomeridiano', 12.00, 18.00);
+INSERT INTO Tipologia_turno(nome_tipologia_turno, ora_inizio_turno, ora_fine_turno) VALUES('Serale', 18.00, 23.30);
+INSERT INTO Tipologia_turno(nome_tipologia_turno, ora_inizio_turno, ora_fine_turno) VALUES('Part-time Matt', 8.00, 12.00);
+INSERT INTO Tipologia_turno(nome_tipologia_turno, ora_inizio_turno, ora_fine_turno) VALUES('Part-time Pome', 15.00, 19.00);
+INSERT INTO Tipologia_turno(nome_tipologia_turno, ora_inizio_turno, ora_fine_turno) VALUES('Full-time Matt', 7.00, 15.00);
+INSERT INTO Tipologia_turno(nome_tipologia_turno, ora_inizio_turno, ora_fine_turno) VALUES('Full-time Pome', 12.00, 20.00);
+INSERT INTO Tipologia_turno(nome_tipologia_turno, ora_inizio_turno, ora_fine_turno) VALUES('Full-time Sera', 16.00, 24.00);
+INSERT INTO Tipologia_turno(nome_tipologia_turno, ora_inizio_turno, ora_fine_turno) VALUES('Matt + Pome', 9.00, 17.00);
+INSERT INTO Tipologia_turno(nome_tipologia_turno, ora_inizio_turno, ora_fine_turno) VALUES('Pome esteso', 13.00, 19.00);

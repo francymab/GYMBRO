@@ -1,1 +1,0 @@
-INSERT INTO Utente(fk_persona) VALUES('CA78534DV');

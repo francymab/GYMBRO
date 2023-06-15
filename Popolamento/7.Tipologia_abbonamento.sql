@@ -1,0 +1,24 @@
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Solo Sala', 1, 39.99);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Solo Pump', 1, 39.99);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Solo Total body', 1, 39.99);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Solo Crossfit', 1, 39.99);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Solo Yoga', 1, 39.99);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Solo GAG', 1, 39.99);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Solo Zumba', 1, 39.99);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Solo TRX', 1, 39.99);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Solo Kick boxing', 1, 39.99);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Solo Step', 1, 39.99);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Solo Nuoto', 1, 39.99);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Solo Karate', 1, 39.99);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Solo Pilates', 1, 39.99);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Solo Aerobica', 1, 39.99);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Solo Spinning', 1, 39.99);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Sala + Anaerobico', 3, 79.99);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Sala + Difesa', 3, 99.99);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Sala + Piscina', 5, 129.99);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Anaerobico', 2, 49.99);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Sala + Fitness', 3, 59.99);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('All pump', 3, 59.99);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Sala + Aerobico', 3, 45.00);
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('Sala + Svago', 1, 45.00);
+

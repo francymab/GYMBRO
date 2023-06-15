@@ -1,2 +1,0 @@
-INSERT INTO Vendita(fk_scontrino, fk_prodotto, quantita_venduta) VALUES('1', '1598657892456', 3);
-
