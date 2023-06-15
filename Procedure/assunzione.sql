@@ -1,5 +1,4 @@
-CREATE OR REPLACE
-PROCEDURE assunzione(numero_persona    CHAR,
+CREATE OR REPLACE PROCEDURE assunzione(numero_persona    CHAR,
                                        via_sedeX         VARCHAR2,
                                        civico_sedeX      VARCHAR2,
                                        cap_sedeX         NUMBER,
