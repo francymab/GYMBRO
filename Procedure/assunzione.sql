@@ -1,5 +1,5 @@
---ASSUNZIONE--
-CREATE OR REPLACE PROCEDURE assunzione(numero_persona    CHAR,
+CREATE OR REPLACE
+PROCEDURE assunzione(numero_persona    CHAR,
                                        via_sedeX         VARCHAR2,
                                        civico_sedeX      VARCHAR2,
                                        cap_sedeX         NUMBER,
@@ -21,12 +21,11 @@ CREATE OR REPLACE PROCEDURE assunzione(numero_persona    CHAR,
     	-- Questa eccezione viene lanciata nel caso in cui la sede inserita si trova nello stato "NON ATTIVO" --     
         sede_exc EXCEPTION;
 
-	-- VARIABILI --
+        -- VARIABILI --
         chk_dipendente NUMBER;
         data_di_nascitaX DATE := TO_DATE ( data_di_nascita, 'DD-MM-YYYY' );
 
         stato_sedeX Sede.stato_sede%type;
-        data_licenziamento DATE;
 
     BEGIN
         -- Controlliamo se la sede è nello stato "ATTIVO" o "NON ATTIVO" --
@@ -37,7 +36,7 @@ CREATE OR REPLACE PROCEDURE assunzione(numero_persona    CHAR,
             RAISE sede_exc;
         END IF;
 
-	-- Controlliamo se già esiste un dipendente all'interno della tabella "Dipendente" con il numero del documento passato in input --
+        -- Controlliamo se già esiste un dipendente all'interno della tabella "Dipendente" con il numero del documento passato in input --
         SELECT COUNT(fk_persona) INTO chk_dipendente FROM Dipendente WHERE fk_persona = numero_persona;
 
 		-- Se esiste, allora si è fatta richiesta di aggiornare i dati relativi al dipendente, in particolare: --
@@ -121,4 +120,7 @@ CREATE OR REPLACE PROCEDURE assunzione(numero_persona    CHAR,
                        cap_sedeX);
             END IF;
         END IF;
-    END;
+EXCEPTION
+    WHEN sede_exc THEN      
+        RAISE_APPLICATION_ERROR('-20007', 'LA SEDE NON È ATTIVA');
+END;

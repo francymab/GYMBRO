@@ -263,7 +263,7 @@ CREATE TABLE lezione_corso (
     fk_corso                 VARCHAR2(30) NOT NULL,
     fk_dipendente            CHAR(9) NOT NULL,
     giorno_settimana_lezione CHAR(3) CHECK ( upper(giorno_settimana_lezione) 
-                                             IN ( 'LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB' ) ) NOT NULL,
+                                             IN ( 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT' ) ) NOT NULL,
     ora_inizio               NUMBER(4, 2) NOT NULL,
     ora_fine                 NUMBER(4, 2) NOT NULL,  
       
