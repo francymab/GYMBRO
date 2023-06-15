@@ -1,0 +1,1 @@
+INSERT INTO Sottoscrizione(fk_utente, fk_abbonamento_nome, fk_sede_via, fk_sede_civico, fk_sede_cap) VALUES('CA78534DV', 'from hero to zero','Via salvator rosa', '150', 80136);

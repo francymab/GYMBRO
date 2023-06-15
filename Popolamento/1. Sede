@@ -1,0 +1,1 @@
+INSERT INTO Sede(via_sede, civico_sede, cap_sede, metri_quadri_sede, telefono_sede) VALUES('Via salvator rosa', '150', 80136, 150, '0815485478');

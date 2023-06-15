@@ -263,9 +263,9 @@ CREATE TABLE lezione_corso (
     fk_corso                 VARCHAR2(30) NOT NULL,
     fk_dipendente            CHAR(9) NOT NULL,
     giorno_settimana_lezione CHAR(3) CHECK ( upper(giorno_settimana_lezione) 
-                                             IN ( 'LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB' ) ) NOT NULL,
-    ora_inizio               TIMESTAMP NOT NULL,
-    ora_fine                 TIMESTAMP NOT NULL,  
+                                             IN ( 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT' ) ) NOT NULL,
+    ora_inizio               NUMBER(4, 2) NOT NULL,
+    ora_fine                 NUMBER(4, 2) NOT NULL,  
       
     -- VINCOLI DI CHIAVE ESTERNA --  
     CONSTRAINT fk_sala_lezione FOREIGN KEY ( fk_sala_via,

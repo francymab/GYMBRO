@@ -1,0 +1,1 @@
+INSERT INTO Prenotazione(data_ora_prenotazione, fk_utente, fk_piscina_numero, fk_piscina_via, fk_piscina_civico, fk_piscina_cap, prezzo_prenotazione) VALUES(TO_TIMESTAMP('26-06-23 10:00', 'DD-MM-YY HH24:MI'), 'CA78534DV', 1, 'Via salvator rosa', '150', 80136, 20.00);

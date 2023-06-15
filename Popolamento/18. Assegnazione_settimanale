@@ -1,0 +1,1 @@
+INSERT INTO Assegnazione_settimanale(data_assegnazione, fk_dipendente, fk_tipologia_turno_nome) VALUES(TO_DATE('30-06-23', 'DD-MM-YY'), 'CA78525DV', 'mattutino');

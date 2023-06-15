@@ -1,0 +1,1 @@
+INSERT INTO Tipologia_abbonamento(nome_tipologia_abbonamento, durata_abbonamento, costo_abbonamento) VALUES('from hero to zero', 1, 15.99);
