@@ -1,1 +1,15 @@
-INSERT INTO Assegnazione_settimanale(data_assegnazione, fk_dipendente, fk_tipologia_turno_nome) VALUES(TO_DATE('30-06-23', 'DD-MM-YY'), 'CA78525DV', 'mattutino');
+INSERT INTO Assegnazione_settimanale(data_assegnazione, fk_dipendente, fk_tipologia_turno_nome) VALUES(TO_DATE('15-06-23', 'DD-MM-YY'), 'CA78534DV', 'Mattutino');
+INSERT INTO Assegnazione_settimanale(data_assegnazione, fk_dipendente, fk_tipologia_turno_nome) VALUES(TO_DATE('16-06-23', 'DD-MM-YY'), 'CB98765VF', 'Pomeridiano');
+INSERT INTO Assegnazione_settimanale(data_assegnazione, fk_dipendente, fk_tipologia_turno_nome) VALUES(TO_DATE('17-06-23', 'DD-MM-YY'), 'CA78144DV', 'Serale');
+INSERT INTO Assegnazione_settimanale(data_assegnazione, fk_dipendente, fk_tipologia_turno_nome) VALUES(TO_DATE('19-06-23', 'DD-MM-YY'), 'CU36584LB', 'Part-time Matt');
+INSERT INTO Assegnazione_settimanale(data_assegnazione, fk_dipendente, fk_tipologia_turno_nome) VALUES(TO_DATE('15-06-23', 'DD-MM-YY'), 'CA78534DV', 'Part-time Pome');
+INSERT INTO Assegnazione_settimanale(data_assegnazione, fk_dipendente, fk_tipologia_turno_nome) VALUES(TO_DATE('17-06-23', 'DD-MM-YY'), 'CB98765VF', 'Full-time Matt');
+INSERT INTO Assegnazione_settimanale(data_assegnazione, fk_dipendente, fk_tipologia_turno_nome) VALUES(TO_DATE('16-06-23', 'DD-MM-YY'), 'CA78144DV', 'Full-time Pome');
+INSERT INTO Assegnazione_settimanale(data_assegnazione, fk_dipendente, fk_tipologia_turno_nome) VALUES(TO_DATE('20-06-23', 'DD-MM-YY'), 'CF36945GV', 'Full-time Sera');
+INSERT INTO Assegnazione_settimanale(data_assegnazione, fk_dipendente, fk_tipologia_turno_nome) VALUES(TO_DATE('17-06-23', 'DD-MM-YY'), 'CG36854JK', 'Matt + Pome');
+INSERT INTO Assegnazione_settimanale(data_assegnazione, fk_dipendente, fk_tipologia_turno_nome) VALUES(TO_DATE('15-06-23', 'DD-MM-YY'), 'CF36945GV', 'Pome esteso');
+INSERT INTO Assegnazione_settimanale(data_assegnazione, fk_dipendente, fk_tipologia_turno_nome) VALUES(TO_DATE('16-06-23', 'DD-MM-YY'), 'CG36854JK', 'Pome esteso');
+INSERT INTO Assegnazione_settimanale(data_assegnazione, fk_dipendente, fk_tipologia_turno_nome) VALUES(TO_DATE('20-06-23', 'DD-MM-YY'), 'CG36854JK', 'Full-time Pome');
+INSERT INTO Assegnazione_settimanale(data_assegnazione, fk_dipendente, fk_tipologia_turno_nome) VALUES(TO_DATE('22-06-23', 'DD-MM-YY'), 'CA70034DV', 'Mattutino');
+INSERT INTO Assegnazione_settimanale(data_assegnazione, fk_dipendente, fk_tipologia_turno_nome) VALUES(TO_DATE('21-06-23', 'DD-MM-YY'), 'CO11025RE', 'Serale');
+INSERT INTO Assegnazione_settimanale(data_assegnazione, fk_dipendente, fk_tipologia_turno_nome) VALUES(TO_DATE('22-06-23', 'DD-MM-YY'), 'CB98564FR', 'Matt + Pome');
